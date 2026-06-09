@@ -473,6 +473,7 @@ dependencies = [
  "sha2 0.11.0",
  "tempfile",
  "tokio",
+ "tokio-util",
  "wildmatch",
 ]
 
@@ -3587,7 +3588,7 @@ checksum = "d2628953ed836273ee4262e3708a8ef63ca38bd8a922070626eef7f9e5d8d536"
 [[package]]
 name = "nix-daemon"
 version = "0.1.1"
-source = "git+https://codeberg.org/blitz/gorgon.git?branch=nix-daemon#7602b9749390305c18cd321c48670223e998481d"
+source = "git+https://codeberg.org/blitz/gorgon.git?branch=nix-daemon-2#f42f79a9d52787802ccaf23cf67329d32a78184c"
 dependencies = [
  "async-stream",
  "chrono",

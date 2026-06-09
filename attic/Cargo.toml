@@ -24,7 +24,13 @@ nix-base32 = "0.2.0"
 pin-project = "1.1.10"
 tempfile = "3"
 wildmatch = "2.4.0"
-nix-daemon = { git = "https://codeberg.org/blitz/gorgon.git", branch = "nix-daemon" }
+nix-daemon = { git = "https://codeberg.org/blitz/gorgon.git", branch = "nix-daemon-2" }
+
+[dependencies.tokio-util]
+workspace = true
+features = [
+    "io"
+]
 
 [dependencies.tokio]
 workspace = true

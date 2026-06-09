@@ -5,10 +5,12 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr as _;
 use std::sync::Arc;
 
+use bytes::Bytes;
 use futures::{stream, Stream, StreamExt};
 use nix_daemon::{Progress, Store};
 use tokio::net::UnixStream;
 use tokio::sync::Mutex;
+use tokio_util::io::ReaderStream;
 
 use super::{to_base_name, StorePath, ValidPathInfo};
 use crate::error::AtticResult;
@@ -100,7 +102,7 @@ impl NixStore {
     pub fn nar_from_path(
         &self,
         store_path: impl AsRef<StorePath>,
-    ) -> impl Stream<Item = AtticResult<Vec<u8>>> + Unpin + Send {
+    ) -> impl Stream<Item = AtticResult<Bytes>> + Unpin + Send {
         let full_store_path = self.get_full_path(store_path);
         let full_store_path_str = full_store_path
             .to_str()
@@ -117,18 +119,14 @@ impl NixStore {
         let setup_fn = async move {
             let daemon = daemon_connect().await?;
 
-            Ok::<_, AtticError>(daemon.nar_from_path(full_store_path_str))
+            daemon.into_nar_from_path(full_store_path_str).result().await.map_err(|e| AtticError::NarFromPathError { reason: e.to_string() })
         };
 
         Box::pin(
             stream::once(setup_fn)
                 .then(async |s| match s {
-                    Ok(stream) => stream
-                        .then(async |i| {
-                            i.map_err(|e| AtticError::NarFromPathError {
-                                reason: e.to_string(),
-                            })
-                        })
+                    Ok(reader) => ReaderStream::new(reader)
+                        .map(|i| i.map_err(|e| AtticError::NarFromPathError { reason: e.to_string() }))
                         .left_stream(),
                     Err(e) => stream::once(async move { Err(e) }).right_stream(),
                 })

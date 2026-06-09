@@ -26,7 +26,7 @@ use anyhow::{anyhow, Context as _, Result};
 use async_channel as channel;
 use bytes::Bytes;
 use futures::future::join_all;
-use futures::stream::{Stream, TryStreamExt};
+use futures::stream::Stream;
 use indicatif::{HumanBytes, MultiProgress, ProgressBar, ProgressState, ProgressStyle};
 use tokio::sync::{mpsc, Mutex};
 use tokio::task::{spawn, JoinHandle};
@@ -582,8 +582,7 @@ pub async fn upload_path(
         );
     let bar = mp.add(ProgressBar::new(path_info.nar_size));
     bar.set_style(style);
-    let nar_stream = NarStreamProgress::new(store.nar_from_path(path.to_owned()), bar.clone())
-        .map_ok(Bytes::from);
+    let nar_stream = NarStreamProgress::new(store.nar_from_path(path.to_owned()), bar.clone());
 
     let start = Instant::now();
     match api
@@ -641,14 +640,14 @@ pub async fn upload_path(
     }
 }
 
-impl<S: Stream<Item = AtticResult<Vec<u8>>>> NarStreamProgress<S> {
+impl<S: Stream<Item = AtticResult<Bytes>>> NarStreamProgress<S> {
     fn new(stream: S, bar: ProgressBar) -> Self {
         Self { stream, bar }
     }
 }
 
-impl<S: Stream<Item = AtticResult<Vec<u8>>> + Unpin> Stream for NarStreamProgress<S> {
-    type Item = AtticResult<Vec<u8>>;
+impl<S: Stream<Item = AtticResult<Bytes>> + Unpin> Stream for NarStreamProgress<S> {
+    type Item = AtticResult<Bytes>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match Pin::new(&mut self.stream).as_mut().poll_next(cx) {
