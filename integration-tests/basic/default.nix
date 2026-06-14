@@ -63,7 +63,7 @@ let
         };
 
         services.cellerd.settings = {
-          database.url = "postgresql:///cellerd?host=/run/postgresql";
+          database.url = "postgresql:///cellerd?host=/run/postgresql&user=cellerd";
         };
       };
       testScriptPost = ''
