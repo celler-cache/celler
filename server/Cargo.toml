@@ -75,7 +75,7 @@ features = [
 ]
 
 [dependencies.sea-orm]
-version = "2.0.0-rc.38"
+version = "2.0.0-rc.40"
 features = [
 	"runtime-tokio-rustls",
 	"macros",
@@ -85,7 +85,17 @@ features = [
 ]
 
 [dependencies.sea-orm-migration]
-version = "2.0.0-rc.38"
+version = "2.0.0-rc.40"
+
+# sea-orm currently pulls in sqlx 0.9.0. It has a regression that changes how
+# the default username for postgres connections is determined. Workaround by
+# explicitly enabling the `std` feature. Can be removed when sqlx has a new
+# release.
+#
+# See: https://github.com/transact-rs/sqlx/pull/4303
+[dependencies.whoami]
+version = "2"
+features = ["std"]
 
 [dependencies.tokio]
 workspace = true
