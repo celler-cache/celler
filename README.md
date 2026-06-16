@@ -3,17 +3,14 @@
 **Celler** is a self-hostable Nix Binary Cache server backed by an S3-compatible storage provider.
 It has support for global deduplication and garbage collection.
 
-## Relationship to Attic
+It is derived from [Attic](https://github.com/zhaofengli/attic). See the [migration guide](https://celler.x86.org/admin-guide/attic-migration.html) for migration instructions.
 
-Celler is a fork of [Attic](https://github.com/zhaofengli/attic). We
-love Attic for its design, clear code and ease-of-use, but found it
-lacking for production setups. The current delta to between Celler and
-Attic is:
+## Rationale for Forking
 
-- ✅ Updated all dependencies.
-- ✅ Remove C++ bindings to `libnixstore`.
-- ✅ Simplified Nix and CI setup
-- ✅ Use pure Rust code to talk to the Nix daemon.
+We love Attic for its design, clear code and ease-of-use, but found it
+lacking for production setups. Development also seems to be stalled.
+
+See the [changelog](CHANGELOG.md) for the current list of changes compared to Attic.
 
 We are also interested in the following features and will work on them
 as time permits.
@@ -21,9 +18,7 @@ as time permits.
 - Prometheus Metrics for requests, duration of requests, NAR file size, chunk size, etc.
 - Request logging
 - Integration into Single-Sign On via OpenID Connect.
-
-We are also open to contributions. In case you want to contribute a
-major feature, please involve us in the design!
+- Store path pinning.
 
 ## Try it out (15 minutes)
 

@@ -1,5 +1,5 @@
 [book]
-authors = ["Zhaofeng Li"]
+authors = ["Julian Stecklina", "Zhaofeng Li"]
 language = "en"
 src = "src"
 title = "Celler"
