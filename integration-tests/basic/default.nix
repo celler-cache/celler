@@ -107,12 +107,6 @@ let
           };
         };
 
-        # For testing only - Don't actually do this
-        environment.etc."minio.env".text = ''
-          MINIO_ROOT_USER=${accessKey}
-          MINIO_ROOT_PASSWORD=${secretKey}
-        '';
-
         networking.firewall.allowedTCPPorts = [ 9000 ];
 
         services.cellerd.settings = {
