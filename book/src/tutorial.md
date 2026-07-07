@@ -100,6 +100,8 @@ $ celleradm make-token --sub alice --validity '3 months' --pull hello --push hel
 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZSIsImV4cCI6MTY4MDI5MzMzOSwiaHR0cHM6Ly9qd3QuYXR0aWMucnMvdjEiOnsiY2FjaGVzIjp7ImhlbGxvIjp7InIiOjEsInciOjF9fX19.XJsaVfjrX5l7p9z76836KXP6Vixn41QJUfxjiK7D-LM
 ```
 
+These tokens will only gain the permissions you explicitly add to them. For example: If you do not already have an all-powerful token, you will first have to generate a token that can create your cache. After creating the cache, you can then distribute pull-only and push-only tokens.
+
 Let's say Alice wants to have her own caches.
 Instead of creating caches for her, we can let her do it herself:
 
