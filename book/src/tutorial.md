@@ -33,13 +33,24 @@ Starting API server...
 Listening on [::]:8080...
 ```
 
+> [!CAUTION]
+> The token printed by `cellerd` is an all-powerful token that can access any cache. Use it with caution and keep it secure.
+
 ## Cache Creation
 
 `cellerd` is the server, and `celler` is the client.
+
+First, let's create a token that can create the `hello` cache and access it. On the server, run the following command to create a token (or use the all-powerful token printed by `cellerd`):
+
+```console
+$ celleradm make-token --sub alice --validity '3 months' --pull 'hello' --push 'hello' --configure 'hello' --create-cache 'hello'
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZSIsImV4cCI6MTY4MDI5MzQyNSwiaHR0cHM6Ly9qd3QuYXR0aWMucnMvdjEiOnsiY2FjaGVzIjp7ImFsaWNlLSoiOnsiciI6MSwidyI6MSwiY2MiOjF9fX19.MkSnK6yGDWYUVnYiJF3tQgdTlqstfWlbziFWUr-lKUk
+```
+
 We can now log in and create a cache:
 
 ```console
-# Copy and paste from the cellerd output
+# Copy and paste the token from the celleradm output above
 $ celler login local http://localhost:8080 eyJ...
 ✍️ Configuring server "local"
 
@@ -90,20 +101,19 @@ Note that to pull into the actual Nix Store, your user must be considered [trust
 
 ## Access Control
 
-Celler performs stateless authentication using signed JWT tokens which contain permissions.
-The root token printed out by `cellerd` is all-powerful and should not be shared.
+Celler performs stateless authentication using signed JWT tokens which contain permissions. We've already created a token in the beginning of the tutorial, but let's elaborate a bit on what you can do with them.
 
-Let's create another token that can only access the `hello` cache:
+Let's create a token that can only access the `hello` cache:
 
 ```console
 $ celleradm make-token --sub alice --validity '3 months' --pull hello --push hello
 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbGljZSIsImV4cCI6MTY4MDI5MzMzOSwiaHR0cHM6Ly9qd3QuYXR0aWMucnMvdjEiOnsiY2FjaGVzIjp7ImhlbGxvIjp7InIiOjEsInciOjF9fX19.XJsaVfjrX5l7p9z76836KXP6Vixn41QJUfxjiK7D-LM
 ```
 
-These tokens will only gain the permissions you explicitly add to them. For example: If you do not already have an all-powerful token, you will first have to generate a token that can create your cache. After creating the cache, you can then distribute pull-only and push-only tokens.
+> [!NOTE]
+> Tokens only have the permissions you explicitly add to them. Tokens that only have push and pull permissions cannot create caches.
 
-Let's say Alice wants to have her own caches.
-Instead of creating caches for her, we can let her do it herself:
+Let's say Alice wants to have her own caches. Instead of creating caches for her, we can let her do it herself:
 
 ```console
 $ celleradm make-token --sub alice --validity '3 months' --pull 'alice-*' --push 'alice-*' --create-cache 'alice-*'
