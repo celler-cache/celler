@@ -41,23 +41,6 @@ let
     exec ${cfg.package}/bin/celleradm -f ${checkedConfigFile} "$@"
   '';
 
-  celleradmWrapper = pkgs.writeShellScriptBin "cellerd-celleradm" ''
-    exec systemd-run \
-      --quiet \
-      --pipe \
-      --pty \
-      --wait \
-      --collect \
-      --service-type=exec \
-      --property=EnvironmentFile=${cfg.environmentFile} \
-      --property=DynamicUser=yes \
-      --property=User=${cfg.user} \
-      --property=Environment=CELLERADM_PWD=$(pwd) \
-      --working-directory / \
-      -- \
-      ${celleradmShim} "$@"
-  '';
-
   hasLocalPostgresDB =
     let
       url = cfg.settings.database.url or "";
@@ -258,10 +241,6 @@ in
         UMask = "0077";
       };
     };
-
-    environment.systemPackages = [
-      celleradmWrapper
-    ];
 
     nixpkgs.overlays = lib.mkIf cfg.useFlakeCompatOverlay [
       overlay
