@@ -16,6 +16,12 @@
       url = "github:edolstra/flake-compat";
       flake = false;
     };
+
+    git-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-compat.follows = "flake-compat";
+    };
   };
 
   outputs = inputs @ { self, flake-parts, ... }: let
