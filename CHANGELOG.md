@@ -14,14 +14,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Binaries renamed: `attic` → `celler`, `atticd` → `cellerd`.
-- NixOS module renamed: `services.atticd` → `services.cellerd`.
-- Environment variables renamed: `ATTIC_SERVER_*` → `CELLER_SERVER_*`.
+- **Breaking**: Binaries renamed: `attic` → `celler`, `atticd` → `cellerd`.
+- **Breaking**: NixOS module renamed: `services.atticd` → `services.cellerd`.
 - Replaced C++ FFI to `libnixstore` with the pure-Rust `nix-daemon` crate.
 - Updated [sea-orm](https://www.sea-ql.org/SeaORM/) to v2.x.
+- `celleradm` was integrated into `celler` as `celler admin` subcommand.
+- **Breaking**: The server doesn't need private keys anymore. Keys are also not BASE64-encoded anymore. Check the [admin guide](https://celler.x86.lol/admin-guide) for the new configuration format.
 
 ### Removed
 
+- Configuration via environment variables: `ATTIC_SERVER_*`, `CELLER_SERVER_*`.
+- `cellerd` does not create an initial token or a template configuration anymore.
 - WASM build target.
 - Static package builds.
 - Docker containers.
