@@ -2,7 +2,7 @@ use std::env;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
-use anyhow::Result;
+use anyhow::{bail, Context, Result};
 use clap::{Parser, ValueEnum};
 use tokio::join;
 use tokio::task::spawn;
@@ -65,9 +65,11 @@ async fn main() -> Result<()> {
 
     init_logging(opts.tokio_console);
     dump_version();
+    check_legacy_config()?;
 
     let config =
-        config::load_config(opts.config.as_deref(), opts.mode == ServerMode::Monolithic).await?;
+        config::load_config(opts.config.as_deref())
+            .await.context("Failed to load configuration file. Please refer to the documentation: https://celler.x86.lol/")?;
 
     match opts.mode {
         ServerMode::Monolithic => {
@@ -131,4 +133,31 @@ fn dump_version() {
 
     #[cfg(not(debug_assertions))]
     eprintln!("Celler {} (release)", env!("CARGO_PKG_VERSION"));
+}
+
+fn check_legacy_config() -> Result<()> {
+    let obsolete_env_vars = [
+        "CELLER_SERVER_CONFIG_BASE64",
+        "CELLER_SERVER_TOKEN_HS256_SECRET_BASE64",
+        "CELLER_SERVER_TOKEN_RS256_SECRET_BASE64",
+        "CELLER_SERVER_TOKEN_RS256_PUBKEY_BASE64",
+        "ATTIC_SERVER_CONFIG_BASE64",
+        "ATTIC_SERVER_TOKEN_HS256_SECRET_BASE64",
+        "ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64",
+        "ATTIC_SERVER_TOKEN_RS256_PUBKEY_BASE64",
+    ];
+
+    for var in obsolete_env_vars {
+        if std::env::var_os(var).is_none() {
+            continue;
+        }
+
+        bail!(
+            "Obsolete environment variable {var} is set. Please adapt your configuration.
+
+Migration guide: https://celler.x86.lol/admin-guide/attic-migration.html
+Changelog:       https://github.com/celler-cache/celler/blob/main/CHANGELOG.md"
+        );
+    }
+    Ok(())
 }
