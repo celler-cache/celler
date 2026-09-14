@@ -1,19 +1,29 @@
-{ lib, stdenv, nix-gitignore, mdbook, mdbook-linkcheck, python3, callPackage, writeScript
+{ lib
+, stdenv
+, nix-gitignore
+, mdbook
+, mdbook-linkcheck
+, python3
+, callPackage
+, writeScript
 , celler ? null
 }:
 
 let
-  colorizedHelp = let
-    help = callPackage ./colorized-help.nix {
-      inherit celler;
-    };
-  in if celler != null then help else null;
-in stdenv.mkDerivation {
+  colorizedHelp =
+    let
+      help = callPackage ./colorized-help.nix {
+        inherit celler;
+      };
+    in
+    if celler != null then help else null;
+in
+stdenv.mkDerivation {
   inherit colorizedHelp;
 
   name = "celler-book";
 
-  src = nix-gitignore.gitignoreSource [] ./.;
+  src = nix-gitignore.gitignoreSource [ ] ./.;
 
   nativeBuildInputs = [ mdbook ];
 

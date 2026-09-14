@@ -16,71 +16,75 @@ in
       options.celler.devshell = {
         packageSets = mkOption {
           type = types.attrsOf (types.listOf types.package);
-          default = {};
+          default = { };
         };
         extraPackages = mkOption {
           type = types.listOf types.package;
-          default = [];
+          default = [ ];
         };
         extraArgs = mkOption {
           type = types.attrsOf types.unspecified;
-          default = {};
+          default = { };
         };
       };
     };
   };
 
   config = {
-    perSystem = { self', pkgs, config, ... }: let
-      cfg = config.celler.devshell;
-    in {
-      celler.devshell.packageSets = with pkgs; {
-        rust = [
-          rustc
-          cargo-audit
-          cargo-expand
-          cargo-outdated
-          cargo-edit
-          cargo-udeps
-          tokio-console
-        ];
+    perSystem = { self', pkgs, config, ... }:
+      let
+        cfg = config.celler.devshell;
+      in
+      {
+        celler.devshell.packageSets = with pkgs; {
+          rust = [
+            rustc
+            cargo-audit
+            cargo-expand
+            cargo-outdated
+            cargo-edit
+            cargo-udeps
+            tokio-console
+          ];
 
-        linters = [
-          clippy
-          rustfmt
+          linters = [
+            clippy
+            rustfmt
+            editorconfig-checker
+            nixpkgs-fmt
+          ];
 
-          editorconfig-checker
-        ];
+          ops = [
+            postgresql
+            sqlite-interactive
+          ];
 
-        ops = [
-          postgresql
-          sqlite-interactive
-        ];
+          bench = [
+            wrk
+          ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+            perf
+          ];
 
-        bench = [
-          wrk
-        ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-          perf
-        ];
-
-      };
-
-      devShells.default = pkgs.mkShell (lib.recursiveUpdate {
-        inputsFrom = [
-          self'.packages.celler
-          self'.packages.book
-        ];
-
-        packages = lib.flatten (lib.attrValues cfg.packageSets);
-
-        env = {
-          CELLER_DISTRIBUTOR = toplevel.config.celler.distributor;
-
-          RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
-
-          NIX_PATH = "nixpkgs=${pkgs.path}";
         };
-      } cfg.extraArgs);
-    };
+
+        devShells.default = pkgs.mkShell (lib.recursiveUpdate
+          {
+            inputsFrom = [
+              self'.packages.celler
+              self'.packages.book
+            ];
+
+            packages = lib.flatten (lib.attrValues cfg.packageSets);
+
+            env = {
+              CELLER_DISTRIBUTOR = toplevel.config.celler.distributor;
+
+              RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
+
+              NIX_PATH = "nixpkgs=${pkgs.path}";
+            };
+          }
+          cfg.extraArgs);
+      };
   };
 }

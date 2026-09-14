@@ -36,6 +36,9 @@ let
     TERM=xterm-256color CLICOLOR_FORCE=1 ${fullCommand} --help | ansi2html -p
     echo '</div></pre>'
   '';
-in runCommand "celler-colorized-help" {
+in
+runCommand "celler-colorized-help"
+{
   nativeBuildInputs = [ celler ansi2html ];
-} (concatStringsSep "\n" (lib.mapAttrsToList renderMarkdown commands))
+}
+  (concatStringsSep "\n" (lib.mapAttrsToList renderMarkdown commands))

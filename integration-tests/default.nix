@@ -27,21 +27,25 @@ let
     result = config.test;
   })).config.result;
 
-  basicTests = let
-    matrix = {
-      database = [ "sqlite" "postgres" ];
-      storage = [ "local" "garage" ];
-    };
-  in builtins.listToAttrs (map (e: {
-    name = "basic-${e.database}-${e.storage}";
-    value = runTest {
-      imports = [
-        ./basic
-        {
-          inherit (e) database storage;
-        }
-      ];
-    };
-  }) (lib.cartesianProduct matrix));
-in {
-} // basicTests
+  basicTests =
+    let
+      matrix = {
+        database = [ "sqlite" "postgres" ];
+        storage = [ "local" "garage" ];
+      };
+    in
+    builtins.listToAttrs (map
+      (e: {
+        name = "basic-${e.database}-${e.storage}";
+        value = runTest {
+          imports = [
+            ./basic
+            {
+              inherit (e) database storage;
+            }
+          ];
+        };
+      })
+      (lib.cartesianProduct matrix));
+in
+{ } // basicTests

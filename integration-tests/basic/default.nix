@@ -81,72 +81,75 @@ let
   };
 
   storageModules = {
-    local = {};
-    garage = let
-      accessKey = "GKaaaaaaaaaaaaaaaaaaaaaaaa";
-      secretKey = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    in {
-      server = { pkgs, ...}: {
-        services.garage = {
-          enable = true;
-          package = pkgs.garage_2;
+    local = { };
+    garage =
+      let
+        accessKey = "GKaaaaaaaaaaaaaaaaaaaaaaaa";
+        secretKey = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+      in
+      {
+        server = { pkgs, ... }: {
+          services.garage = {
+            enable = true;
+            package = pkgs.garage_2;
 
-          settings = {
-            replication_factor = 1;
-            consistent_mode = "consistent";
+            settings = {
+              replication_factor = 1;
+              consistent_mode = "consistent";
 
-            rpc_bind_addr = "[::]:3901";
-            rpc_public_addr = "[::]:3901";
-            rpc_secret = "5c1915fa04d0b6739675c61bf5907eb0fe3d9c69850c83820f51b4d25d13868c";
+              rpc_bind_addr = "[::]:3901";
+              rpc_public_addr = "[::]:3901";
+              rpc_secret = "5c1915fa04d0b6739675c61bf5907eb0fe3d9c69850c83820f51b4d25d13868c";
 
-            s3_api = {
-              s3_region = "garage";
-              api_bind_addr = "[::]:9000";
-              root_domain = ".s3.garage";
+              s3_api = {
+                s3_region = "garage";
+                api_bind_addr = "[::]:9000";
+                root_domain = ".s3.garage";
+              };
+
             };
+          };
 
+          networking.firewall.allowedTCPPorts = [ 9000 ];
+
+          services.cellerd.settings = {
+            storage = {
+              type = "s3";
+              endpoint = "http://server:9000";
+              region = "garage";
+              bucket = "celler";
+
+              credentials = {
+                access_key_id = accessKey;
+                secret_access_key = secretKey;
+              };
+            };
           };
         };
 
-        networking.firewall.allowedTCPPorts = [ 9000 ];
+        # Heavily inspired by the Nixpkgs atticd test.
+        testScript = ''
+          server.wait_for_unit("garage.service")
+          server.wait_for_open_port(3901)
 
-        services.cellerd.settings = {
-          storage = {
-            type = "s3";
-            endpoint = "http://server:9000";
-            region = "garage";
-            bucket = "celler";
+          # Create cluster
+          node_id = server.succeed("garage status | tail -n1 | cut -d' ' -f1")
+          server.succeed(f"garage layout assign -z dc1 -c 128M {node_id}")
+          server.succeed("garage layout apply --version 1")
 
-            credentials = {
-              access_key_id = accessKey;
-              secret_access_key = secretKey;
-            };
-          };
-        };
+          # Create bucket
+          server.succeed("garage bucket create celler")
+
+          # Create access keys
+          server.succeed("garage key import ${accessKey} ${secretKey} --yes")
+          server.succeed("garage bucket allow --read --write --owner celler --key ${accessKey}")
+
+          server.wait_for_open_port(9000)
+        '';
       };
-
-      # Heavily inspired by the Nixpkgs atticd test.
-      testScript = ''
-        server.wait_for_unit("garage.service")
-        server.wait_for_open_port(3901)
-
-        # Create cluster
-        node_id = server.succeed("garage status | tail -n1 | cut -d' ' -f1")
-        server.succeed(f"garage layout assign -z dc1 -c 128M {node_id}")
-        server.succeed("garage layout apply --version 1")
-
-        # Create bucket
-        server.succeed("garage bucket create celler")
-
-        # Create access keys
-        server.succeed("garage key import ${accessKey} ${secretKey} --yes")
-        server.succeed("garage bucket allow --read --write --owner celler --key ${accessKey}")
-
-        server.wait_for_open_port(9000)
-      '';
-    };
   };
-in {
+in
+{
   options = {
     database = lib.mkOption {
       type = types.enum [ "sqlite" "postgres" ];
@@ -165,8 +168,8 @@ in {
       server = {
         imports = [
           flake.nixosModules.cellerd
-          (databaseModules.${config.database}.server or {})
-          (storageModules.${config.storage}.server or {})
+          (databaseModules.${config.database}.server or { })
+          (storageModules.${config.storage}.server or { })
         ];
 
         services.cellerd = {
