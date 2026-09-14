@@ -3,6 +3,9 @@
 **Celler** is a self-hostable Nix Binary Cache server backed by an S3-compatible storage provider.
 It has support for global deduplication and garbage collection.
 
+> [!IMPORTANT]
+> If you come here, because your server didn't start up anymore after an update, please refer to the [changelog](https://github.com/celler-cache/celler/blob/main/CHANGELOG.md) and the [Attic migration guide](admin-guide/attic-migration.md).
+
 Celler is still an early prototype and is looking for more testers. Want to jump in? [Start your own Celler server](./tutorial.md) in 15 minutes.
 
 ```
