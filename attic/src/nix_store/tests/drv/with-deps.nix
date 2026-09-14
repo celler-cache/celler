@@ -18,4 +18,5 @@ let
     builder = ./with-deps.nix;
     system = "x86_64-linux";
   };
-in a
+in
+a

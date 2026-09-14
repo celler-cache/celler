@@ -94,6 +94,7 @@ let
       runHook postInstall
     '';
   });
-in {
+in
+{
   inherit celler celler-tests;
 }
