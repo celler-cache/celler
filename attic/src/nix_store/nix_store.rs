@@ -3,6 +3,7 @@
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::str::FromStr as _;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
 use bytes::Bytes;
@@ -23,6 +24,9 @@ pub struct NixStore {
 
     /// Path to the Nix store itself.
     store_dir: PathBuf,
+
+    /// Consecutive failed queries, reset on success.
+    daemon_consecutive_failures: AtomicU64,
 }
 
 const DAEMON_SOCKET_PATH: &str = "/nix/var/nix/daemon-socket/socket";
@@ -43,6 +47,7 @@ impl NixStore {
             daemon: Arc::new(Mutex::new(daemon_connect().await?)),
             // TODO: Make this method async and call nix-instantiate --raw --eval -E 'builtins.storeDir'
             store_dir: PathBuf::from_str("/nix/store").unwrap(),
+            daemon_consecutive_failures: AtomicU64::new(0),
         })
     }
 
@@ -200,26 +205,52 @@ impl NixStore {
     pub async fn is_valid_path(&self, store_path: impl AsRef<StorePath>) -> AtticResult<bool> {
         let mut daemon = self.daemon.lock().await;
 
-        Ok(daemon
-            .is_valid_path(
-                self.get_full_path(&store_path)
-                    .as_os_str()
-                    .to_str()
-                    .ok_or_else(|| AtticError::InvalidStorePath {
-                        path: store_path.as_ref().base_name.clone(),
-                        reason: "Invalid UTF-8",
-                    })?,
-            )
-            .result()
-            .await
-            .inspect_err(|e| {
-                eprintln!(
-                    "Failed to query path, considering non-valid: {} {}",
-                    self.get_full_path(&store_path).display(),
-                    e
-                );
-            })
-            .unwrap_or(false))
+        let path_str = self
+            .get_full_path(&store_path)
+            .as_os_str()
+            .to_str()
+            .ok_or_else(|| AtticError::InvalidStorePath {
+                path: store_path.as_ref().base_name.clone(),
+                reason: "Invalid UTF-8",
+            })?
+            .to_owned();
+
+        let result = daemon.is_valid_path(&path_str).result().await;
+
+        // A dead daemon connection surfaces the same as an invalid path.
+        // Reconnect and retry once before giving up.
+        let result = match result {
+            Ok(_) => result,
+            Err(first_err) => match daemon_connect().await {
+                Ok(fresh) => {
+                    *daemon = fresh;
+                    let retry = daemon.is_valid_path(&path_str).result().await;
+                    if retry.is_ok() {
+                        eprintln!("Reconnected to nix-daemon after a broken query ({path_str} {first_err:?}); query succeeded on retry");
+                    }
+                    retry
+                }
+                Err(reconnect_err) => {
+                    eprintln!("Failed to reconnect to nix-daemon after a broken query ({path_str} {first_err:?}): {reconnect_err:?}");
+                    Err(first_err)
+                }
+            },
+        };
+
+        Ok(match result {
+            Ok(valid) => {
+                self.daemon_consecutive_failures.store(0, Ordering::Relaxed);
+                valid
+            }
+            Err(e) => {
+                let failures = self
+                    .daemon_consecutive_failures
+                    .fetch_add(1, Ordering::Relaxed)
+                    + 1;
+                eprintln!("Failed to query path (reconnect did not help), considering non-valid: {path_str} {e:?} (consecutive failures: {failures})");
+                false
+            }
+        })
     }
 
     /// Returns detailed information on a path.
