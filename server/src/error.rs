@@ -132,7 +132,7 @@ impl From<super::access::Error> for ServerError {
 }
 
 impl From<object_store::Error> for ServerError {
-    fn from(error: object_store::Error) -> Self {
+    fn from(_error: object_store::Error) -> Self {
         todo!()
     }
 }

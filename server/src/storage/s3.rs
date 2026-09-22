@@ -1,27 +1,21 @@
 //! S3 remote files.
 
-use std::time::Duration;
+
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use futures::TryStreamExt as _;
 use object_store::ObjectStoreExt;
 use object_store::aws::{AmazonS3Builder, AmazonS3};
-use bytes::BytesMut;
-use futures::future::join_all;
 use object_store::path::Path;
 use serde::{Deserialize, Serialize};
-use tokio::io::AsyncRead;
+use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio_util::io::StreamReader;
 
 use super::{Download, RemoteFile, StorageBackend};
 use crate::error::{ErrorKind, ServerError, ServerResult};
-use attic::io::read_chunk_async;
-use attic::util::Finally;
 
-/// The chunk size for each part in a multipart upload.
-const CHUNK_SIZE: usize = 8 * 1024 * 1024;
-
-type Client = AmazonS3;
+type Client = Arc<AmazonS3>;
 
 /// The S3 remote file storage backend.
 #[derive(Debug)]
@@ -79,6 +73,8 @@ pub struct S3RemoteFile {
 impl S3Backend {
     fn config_builder(config: &S3StorageConfig) -> AmazonS3Builder {
         let mut builder = AmazonS3Builder::from_env()
+            // We allow HTTP, because using a self-hosted object storage is a common setup.
+            .with_allow_http(true)
             .with_region(&config.region)
             .with_bucket_name(&config.bucket);
 
@@ -95,8 +91,10 @@ impl S3Backend {
     }
 
     pub async fn new(config: S3StorageConfig) -> ServerResult<Self> {
+        let client = Arc::new(Self::config_builder(&config).build()?);
+
         Ok(Self {
-            client: Self::config_builder(&config).build()?,
+            client,
             config,
         })
     }
@@ -118,10 +116,10 @@ impl S3Backend {
             self.client.clone()
         } else {
             // TODO: Cache the client instance
-            Self::config_builder(&self.config)
+            Arc::new(Self::config_builder(&self.config)
                 .with_region(&file.region)
                 .build()
-                .map_err(ServerError::storage_error)?
+                .map_err(ServerError::storage_error)?)
         };
 
         Ok((client, file))
@@ -135,146 +133,19 @@ impl StorageBackend for S3Backend {
         name: String,
         mut stream: &mut (dyn AsyncRead + Unpin + Send),
     ) -> ServerResult<RemoteFile> {
-        // let buf = BytesMut::with_capacity(CHUNK_SIZE);
-        // let first_chunk = read_chunk_async(&mut stream, buf)
-        //     .await
-        //     .map_err(ServerError::storage_error)?;
+        let mut writer = object_store::buffered::BufWriter::new(self.client.clone(), name.clone().into());
 
-        // if first_chunk.len() < CHUNK_SIZE {
-        //     // do a normal PutObject
-        //     let put_object = self
-        //         .client
-        //         .put_object()
-        //         .bucket(&self.config.bucket)
-        //         .key(&name)
-        //         .body(first_chunk.into())
-        //         .send()
-        //         .await
-        //         .map_err(ServerError::storage_error)?;
+        tokio::io::copy(&mut stream, &mut writer).await.map_err(ServerError::storage_error)?;
+        writer.shutdown().await.map_err(ServerError::storage_error)?;
 
-        //     tracing::debug!("put_object -> {:#?}", put_object);
-
-        //     return Ok(RemoteFile::S3(S3RemoteFile {
-        //         region: self.config.region.clone(),
-        //         bucket: self.config.bucket.clone(),
-        //         key: name,
-        //     }));
-        // }
-
-        // let multipart = self
-        //     .client
-        //     .create_multipart_upload()
-        //     .bucket(&self.config.bucket)
-        //     .key(&name)
-        //     .send()
-        //     .await
-        //     .map_err(ServerError::storage_error)?;
-
-        // let upload_id = multipart.upload_id().unwrap();
-
-        // let cleanup = Finally::new({
-        //     let bucket = self.config.bucket.clone();
-        //     let client = self.client.clone();
-        //     let upload_id = upload_id.to_owned();
-        //     let name = name.clone();
-
-        //     async move {
-        //         tracing::warn!("Upload was interrupted - Aborting multipart upload");
-
-        //         let r = client
-        //             .abort_multipart_upload()
-        //             .bucket(bucket)
-        //             .key(name)
-        //             .upload_id(upload_id)
-        //             .send()
-        //             .await;
-
-        //         if let Err(e) = r {
-        //             tracing::warn!("Failed to abort multipart upload: {}", e);
-        //         }
-        //     }
-        // });
-
-        // let mut part_number = 1;
-        // let mut parts = Vec::new();
-        // let mut first_chunk = Some(first_chunk);
-
-        // loop {
-        //     let chunk = if part_number == 1 {
-        //         first_chunk.take().unwrap()
-        //     } else {
-        //         let buf = BytesMut::with_capacity(CHUNK_SIZE);
-        //         read_chunk_async(&mut stream, buf)
-        //             .await
-        //             .map_err(ServerError::storage_error)?
-        //     };
-
-        //     if chunk.is_empty() {
-        //         break;
-        //     }
-
-        //     let client = self.client.clone();
-        //     let fut = tokio::task::spawn({
-        //         client
-        //             .upload_part()
-        //             .bucket(&self.config.bucket)
-        //             .key(&name)
-        //             .upload_id(upload_id)
-        //             .part_number(part_number)
-        //             .body(chunk.clone().into())
-        //             .send()
-        //     });
-
-        //     parts.push(fut);
-        //     part_number += 1;
-        // }
-
-        // #[allow(clippy::result_large_err)]
-        // let completed_parts = join_all(parts)
-        //     .await
-        //     .into_iter()
-        //     .map(|join_result| join_result.unwrap())
-        //     .collect::<std::result::Result<Vec<_>, _>>()
-        //     .map_err(ServerError::storage_error)?
-        //     .into_iter()
-        //     .enumerate()
-        //     .map(|(idx, part)| {
-        //         let part_number = idx + 1;
-        //         CompletedPart::builder()
-        //             .set_e_tag(part.e_tag().map(str::to_string))
-        //             .set_part_number(Some(part_number as i32))
-        //             .build()
-        //     })
-        //     .collect::<Vec<_>>();
-
-        // let completed_multipart_upload = CompletedMultipartUpload::builder()
-        //     .set_parts(Some(completed_parts))
-        //     .build();
-
-        // let completion = self
-        //     .client
-        //     .complete_multipart_upload()
-        //     .bucket(&self.config.bucket)
-        //     .key(&name)
-        //     .upload_id(upload_id)
-        //     .multipart_upload(completed_multipart_upload)
-        //     .send()
-        //     .await
-        //     .map_err(ServerError::storage_error)?;
-
-        // tracing::debug!("complete_multipart_upload -> {:#?}", completion);
-
-        // cleanup.cancel();
-
-        // Ok(RemoteFile::S3(S3RemoteFile {
-        //     region: self.config.region.clone(),
-        //     bucket: self.config.bucket.clone(),
-        //     key: name,
-        // }))
-        todo!()
+        Ok(RemoteFile::S3(S3RemoteFile {
+            region: self.config.region.clone(),
+            bucket: self.config.bucket.clone(),
+            key: name,
+        }))
     }
 
-    async fn delete_file(&self, name: String) -> ServerResult<()> {
+    async fn delete_file(&self, _name: String) -> ServerResult<()> {
         // let deletion = self
         //     .client
         //     .delete_object()
@@ -290,7 +161,7 @@ impl StorageBackend for S3Backend {
         todo!()
     }
 
-    async fn delete_file_db(&self, file: &RemoteFile) -> ServerResult<()> {
+    async fn delete_file_db(&self, _file: &RemoteFile) -> ServerResult<()> {
         // let (client, file) = self.get_client_from_db_ref(file).await?;
 
         // let deletion = client
@@ -308,7 +179,7 @@ impl StorageBackend for S3Backend {
     }
 
     // TODO Pass references instead
-    async fn download_file(&self, name: String, prefer_stream: bool) -> ServerResult<Download> {
+    async fn download_file(&self, name: String, _prefer_stream: bool) -> ServerResult<Download> {
 
         // TODO: prefer_stream
 
@@ -316,7 +187,6 @@ impl StorageBackend for S3Backend {
 
         let stream = match payload {
             object_store::GetResultPayload::Stream(stream) => stream,
-            _ => unreachable!(),
         };
 
         // AsyncReader can only emit std::io::Error.
@@ -328,8 +198,8 @@ impl StorageBackend for S3Backend {
 
     async fn download_file_db(
         &self,
-        file: &RemoteFile,
-        prefer_stream: bool,
+        _file: &RemoteFile,
+        _prefer_stream: bool,
     ) -> ServerResult<Download> {
         // let (client, file) = self.get_client_from_db_ref(file).await?;
 
