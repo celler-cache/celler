@@ -73,7 +73,7 @@ pub struct S3RemoteFile {
 impl S3Backend {
     fn config_builder(config: &S3StorageConfig) -> AmazonS3Builder {
         let mut builder = AmazonS3Builder::from_env()
-            // We allow HTTP, because using a self-hosted object storage is a common setup.
+            // We allow HTTP, because using a plain HTTP connection common for testing.
             .with_allow_http(true)
             .with_region(&config.region)
             .with_bucket_name(&config.bucket);
@@ -112,12 +112,13 @@ impl S3Backend {
             .into());
         };
 
-        let client = if self.config.region == file.region {
+        let client = if self.config.region == file.region && self.config.bucket == file.bucket {
             self.client.clone()
         } else {
             // TODO: Cache the client instance
             Arc::new(Self::config_builder(&self.config)
                 .with_region(&file.region)
+                .with_bucket_name(&file.bucket)
                 .build()
                 .map_err(ServerError::storage_error)?)
         };
@@ -198,15 +199,19 @@ impl StorageBackend for S3Backend {
 
     async fn download_file_db(
         &self,
-        _file: &RemoteFile,
-        _prefer_stream: bool,
+        file: &RemoteFile,
+        prefer_stream: bool,
     ) -> ServerResult<Download> {
-        // let (client, file) = self.get_client_from_db_ref(file).await?;
-
-        // let req = client.get_object().bucket(&file.bucket).key(&file.key);
-
-        // self.get_download(req, prefer_stream).await
-        todo!()
+        match file {
+            RemoteFile::S3(s3) => {
+                if s3.bucket == self.config.bucket && s3.region == self.config.region {
+                    self.download_file(s3.key.clone(), prefer_stream).await
+                } else {
+                    todo!()
+                }
+            }
+            _ => unreachable!(),
+        }
     }
 
     async fn make_db_reference(&self, name: String) -> ServerResult<RemoteFile> {
