@@ -1,13 +1,15 @@
 //! S3 remote files.
 
-
 use std::sync::Arc;
+use std::time::Duration;
 
 use async_trait::async_trait;
+use axum::http::Method;
 use futures::TryStreamExt as _;
-use object_store::ObjectStoreExt;
-use object_store::aws::{AmazonS3Builder, AmazonS3};
+use object_store::aws::{AmazonS3, AmazonS3Builder};
 use object_store::path::Path;
+use object_store::signer::Signer;
+use object_store::ObjectStoreExt;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio_util::io::StreamReader;
@@ -83,8 +85,9 @@ impl S3Backend {
         }
 
         if let Some(credentials) = &config.credentials {
-            builder = builder.with_access_key_id(&credentials.access_key_id)
-                    .with_secret_access_key(&credentials.secret_access_key);
+            builder = builder
+                .with_access_key_id(&credentials.access_key_id)
+                .with_secret_access_key(&credentials.secret_access_key);
         }
 
         builder
@@ -93,10 +96,7 @@ impl S3Backend {
     pub async fn new(config: S3StorageConfig) -> ServerResult<Self> {
         let client = Arc::new(Self::config_builder(&config).build()?);
 
-        Ok(Self {
-            client,
-            config,
-        })
+        Ok(Self { client, config })
     }
 
     async fn get_client_from_db_ref<'a>(
@@ -116,11 +116,13 @@ impl S3Backend {
             self.client.clone()
         } else {
             // TODO: Cache the client instance
-            Arc::new(Self::config_builder(&self.config)
-                .with_region(&file.region)
-                .with_bucket_name(&file.bucket)
-                .build()
-                .map_err(ServerError::storage_error)?)
+            Arc::new(
+                Self::config_builder(&self.config)
+                    .with_region(&file.region)
+                    .with_bucket_name(&file.bucket)
+                    .build()
+                    .map_err(ServerError::storage_error)?,
+            )
         };
 
         Ok((client, file))
@@ -134,10 +136,16 @@ impl StorageBackend for S3Backend {
         name: String,
         mut stream: &mut (dyn AsyncRead + Unpin + Send),
     ) -> ServerResult<RemoteFile> {
-        let mut writer = object_store::buffered::BufWriter::new(self.client.clone(), name.clone().into());
+        let mut writer =
+            object_store::buffered::BufWriter::new(self.client.clone(), name.clone().into());
 
-        tokio::io::copy(&mut stream, &mut writer).await.map_err(ServerError::storage_error)?;
-        writer.shutdown().await.map_err(ServerError::storage_error)?;
+        tokio::io::copy(&mut stream, &mut writer)
+            .await
+            .map_err(ServerError::storage_error)?;
+        writer
+            .shutdown()
+            .await
+            .map_err(ServerError::storage_error)?;
 
         Ok(RemoteFile::S3(S3RemoteFile {
             region: self.config.region.clone(),
@@ -146,45 +154,41 @@ impl StorageBackend for S3Backend {
         }))
     }
 
-    async fn delete_file(&self, _name: String) -> ServerResult<()> {
-        // let deletion = self
-        //     .client
-        //     .delete_object()
-        //     .bucket(&self.config.bucket)
-        //     .key(&name)
-        //     .send()
-        //     .await
-        //     .map_err(ServerError::storage_error)?;
-
-        // tracing::debug!("delete_file -> {:#?}", deletion);
-
-        // Ok(())
-        todo!()
+    async fn delete_file(&self, name: String) -> ServerResult<()> {
+        self.client
+            .delete(&name.into())
+            .await
+            .map_err(ServerError::storage_error)?;
+        Ok(())
     }
 
-    async fn delete_file_db(&self, _file: &RemoteFile) -> ServerResult<()> {
-        // let (client, file) = self.get_client_from_db_ref(file).await?;
+    async fn delete_file_db(&self, file: &RemoteFile) -> ServerResult<()> {
+        let (client, file) = self.get_client_from_db_ref(file).await?;
 
-        // let deletion = client
-        //     .delete_object()
-        //     .bucket(&file.bucket)
-        //     .key(&file.key)
-        //     .send()
-        //     .await
-        //     .map_err(ServerError::storage_error)?;
-
-        // tracing::debug!("delete_file -> {:#?}", deletion);
-
-        // Ok(())
-        todo!()
+        client
+            .delete(&Path::from(file.key.as_ref()))
+            .await
+            .map_err(ServerError::storage_error)?;
+        Ok(())
     }
 
     // TODO Pass references instead
-    async fn download_file(&self, name: String, _prefer_stream: bool) -> ServerResult<Download> {
+    async fn download_file(&self, name: String, prefer_stream: bool) -> ServerResult<Download> {
+        if !prefer_stream {
+            let url = self
+                .client
+                .signed_url(Method::GET, &name.into(), Duration::from_mins(5))
+                .await
+                .map_err(ServerError::storage_error)?;
+            return Ok(Download::Url(url.to_string()));
+        }
 
-        // TODO: prefer_stream
-
-        let payload = self.client.get(&Path::from(name)).await.map_err(ServerError::storage_error)?.payload;
+        let payload = self
+            .client
+            .get(&Path::from(name))
+            .await
+            .map_err(ServerError::storage_error)?
+            .payload;
 
         let stream = match payload {
             object_store::GetResultPayload::Stream(stream) => stream,
@@ -202,15 +206,41 @@ impl StorageBackend for S3Backend {
         file: &RemoteFile,
         prefer_stream: bool,
     ) -> ServerResult<Download> {
-        match file {
-            RemoteFile::S3(s3) => {
-                if s3.bucket == self.config.bucket && s3.region == self.config.region {
-                    self.download_file(s3.key.clone(), prefer_stream).await
-                } else {
-                    todo!()
-                }
-            }
+        let s3 = match file {
+            RemoteFile::S3(s3) => s3,
             _ => unreachable!(),
+        };
+
+        if s3.bucket == self.config.bucket && s3.region == self.config.region {
+            return self.download_file(s3.key.clone(), prefer_stream).await;
+        };
+
+        let (client, s3) = self.get_client_from_db_ref(file).await?;
+        if !prefer_stream {
+            let url = client
+                .signed_url(
+                    Method::GET,
+                    &Path::from(s3.key.as_ref()),
+                    Duration::from_mins(5),
+                )
+                .await
+                .map_err(ServerError::storage_error)?;
+            return Ok(Download::Url(url.to_string()));
+        } else {
+            let payload = client
+                .get(&Path::from(s3.key.clone()))
+                .await
+                .map_err(ServerError::storage_error)?
+                .payload;
+
+            let stream = match payload {
+                object_store::GetResultPayload::Stream(stream) => stream,
+            };
+
+            let io_stream = stream.map_err(std::io::Error::other);
+
+            let reader: Box<dyn AsyncRead + Send + Unpin> = Box::new(StreamReader::new(io_stream));
+            Ok(Download::AsyncRead(reader))
         }
     }
 
