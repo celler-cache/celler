@@ -67,9 +67,9 @@ pub fn bench_chunking(c: &mut Criterion) {
                 let cursor = Cursor::new(&data);
                 let mut chunks = fastcdc::v2020::AsyncStreamCDC::new(
                     cursor,
-                    params.min_size,
-                    params.avg_size,
-                    params.max_size,
+                    params.min_size as usize,
+                    params.avg_size as usize,
+                    params.max_size as usize,
                 );
                 let mut chunks = Box::pin(chunks.as_stream());
                 while let Some(chunk) = chunks.next().await {
