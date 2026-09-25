@@ -33,5 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - S3 storage: improved tolerance for transient errors.
 - Improved error logging for `push` and `watch-store`.
+- `celler login` now fails if the configuration file cannot be written, instead of only logging the error.
 
 [Unreleased]: https://github.com/blitz/celler/compare/12cbeca141f46e1ade76728bce8adc447f2166c6...HEAD

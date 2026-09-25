@@ -57,5 +57,5 @@ pub async fn run(opts: Opts) -> Result<()> {
         config_m.default_server = Some(sub.name.to_owned());
     }
 
-    Ok(())
+    config_m.save()
 }

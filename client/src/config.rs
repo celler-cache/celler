@@ -7,9 +7,10 @@
 use std::collections::HashMap;
 use std::fs::{self, read_to_string, OpenOptions, Permissions};
 use std::io::Write;
+use std::mem::ManuallyDrop;
 use std::ops::{Deref, DerefMut};
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Context, Result};
 use serde::{Deserialize, Serialize};
@@ -110,29 +111,42 @@ impl Config {
         ConfigWriteGuard(self)
     }
 
-    /// Saves the configuration back to the system, if possible.
+    /// Saves the configuration back to the system.
+    ///
+    /// Fails if the configuration path could not be determined or the
+    /// file could not be written.
     pub fn save(&self) -> Result<()> {
-        if let Some(path) = &self.path {
-            let serialized = toml::to_string(&self.data)?;
+        let path = self
+            .path
+            .as_ref()
+            .ok_or_else(|| anyhow!("Could not determine the configuration file path"))?;
 
-            // This isn't atomic, so some other process might chmod it
-            // to something else before we write. We don't handle this case.
-            if path.exists() {
-                let permissions = Permissions::from_mode(FILE_MODE);
-                fs::set_permissions(path, permissions)?;
-            }
+        let serialized = toml::to_string(&self.data)?;
 
-            let mut file = OpenOptions::new()
-                .create(true)
-                .write(true)
-                .truncate(true)
-                .mode(FILE_MODE)
-                .open(path)?;
+        Self::write(path, &serialized)
+            .with_context(|| format!("Failed to write configuration to {}", path.display()))?;
 
-            file.write_all(serialized.as_bytes())?;
+        tracing::debug!("Saved modified configuration to {:?}", path);
 
-            tracing::debug!("Saved modified configuration to {:?}", path);
+        Ok(())
+    }
+
+    fn write(path: &Path, serialized: &str) -> Result<()> {
+        // This isn't atomic, so some other process might chmod it
+        // to something else before we write. We don't handle this case.
+        if path.exists() {
+            let permissions = Permissions::from_mode(FILE_MODE);
+            fs::set_permissions(path, permissions)?;
         }
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .mode(FILE_MODE)
+            .open(path)?;
+
+        file.write_all(serialized.as_bytes())?;
 
         Ok(())
     }
@@ -196,6 +210,19 @@ impl ConfigData {
     }
 }
 
+impl ConfigWriteGuard<'_> {
+    /// Saves the modified configuration, reporting any error to the caller.
+    ///
+    /// Dropping the guard also saves the configuration, but can only log
+    /// failures. Use this when the command should fail if the configuration
+    /// cannot be persisted.
+    pub fn save(self) -> Result<()> {
+        // Skip the save in `Drop` since we are saving explicitly.
+        let guard = ManuallyDrop::new(self);
+        guard.0.save()
+    }
+}
+
 impl<'a> Deref for ConfigWriteGuard<'a> {
     type Target = ConfigData;
 
@@ -223,4 +250,83 @@ fn get_config_path() -> Result<PathBuf> {
     let config_path = xdg_dirs.place_config_file("config.toml")?;
 
     Ok(config_path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    /// Returns a fresh, empty scratch directory for a test.
+    fn scratch_dir(name: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "celler-config-test-{}-{}",
+            std::process::id(),
+            name
+        ));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    fn config_with_path(path: Option<PathBuf>) -> Config {
+        Config {
+            data: ConfigData::default(),
+            path,
+        }
+    }
+
+    fn add_server(config: &mut ConfigData) {
+        config.servers.insert(
+            ServerName::from_str("test").unwrap(),
+            ServerConfig {
+                endpoint: "http://localhost:8080".to_string(),
+                token: None,
+            },
+        );
+    }
+
+    #[test]
+    fn test_save_without_path_fails() {
+        let config = config_with_path(None);
+
+        assert!(config.save().is_err());
+    }
+
+    #[test]
+    fn test_guard_save_reports_write_error() {
+        let dir = scratch_dir("write-error");
+        // The parent directory doesn't exist, so the file can't be created.
+        let path = dir.join("missing").join("config.toml");
+        let mut config = config_with_path(Some(path.clone()));
+
+        let mut config_m = config.as_mut();
+        add_server(&mut config_m);
+        let err = config_m.save().unwrap_err();
+
+        assert!(format!("{err}").contains(&path.display().to_string()));
+        assert!(!path.exists());
+
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn test_guard_save_writes_config() {
+        let dir = scratch_dir("write-ok");
+        let path = dir.join("config.toml");
+        let mut config = config_with_path(Some(path.clone()));
+
+        let mut config_m = config.as_mut();
+        add_server(&mut config_m);
+        config_m.save().unwrap();
+
+        let saved = ConfigData::load_from_path(Some(&path)).unwrap();
+        assert_eq!(saved.servers.len(), 1);
+        assert_eq!(
+            fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+            FILE_MODE
+        );
+
+        fs::remove_dir_all(dir).unwrap();
+    }
 }
