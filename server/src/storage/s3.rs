@@ -87,7 +87,10 @@ impl S3Backend {
             // We allow HTTP, because using a plain HTTP connection common for testing.
             .with_allow_http(true)
             .with_region(&config.region)
-            .with_bucket_name(&config.bucket);
+            .with_bucket_name(&config.bucket)
+            // Use virtual-hosted-style requests for AWS, but path-style requests for custom
+            // endpoints, because S3-compatible storage often doesn't support virtual hosts.
+            .with_virtual_hosted_style_request(config.endpoint.is_none());
 
         if let Some(endpoint) = &config.endpoint {
             builder = builder.with_endpoint(endpoint);
