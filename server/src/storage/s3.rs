@@ -99,13 +99,11 @@ impl S3Backend {
         Ok(Self { client, config })
     }
 
-    async fn get_client_from_db_ref<'a>(
+    fn get_client_from_db_ref<'a>(
         &self,
         file: &'a RemoteFile,
     ) -> ServerResult<(Client, &'a S3RemoteFile)> {
-        let file = if let RemoteFile::S3(file) = file {
-            file
-        } else {
+        let RemoteFile::S3(file) = file else {
             return Err(ErrorKind::StorageError(anyhow::anyhow!(
                 "Does not understand the remote file reference"
             ))
@@ -120,12 +118,38 @@ impl S3Backend {
                 Self::config_builder(&self.config)
                     .with_region(&file.region)
                     .with_bucket_name(&file.bucket)
-                    .build()
-                    .map_err(ServerError::storage_error)?,
+                    .build()?,
             )
         };
 
         Ok((client, file))
+    }
+
+    fn db_ref(&self, key: String) -> RemoteFile {
+        RemoteFile::S3(S3RemoteFile {
+            region: self.config.region.clone(),
+            bucket: self.config.bucket.clone(),
+            key,
+        })
+    }
+
+    async fn download_from(
+        client: &AmazonS3,
+        path: &Path,
+        prefer_stream: bool,
+    ) -> ServerResult<Download> {
+        if !prefer_stream {
+            let url = client
+                .signed_url(Method::GET, path, Duration::from_mins(5))
+                .await?;
+            return Ok(Download::Url(url.to_string()));
+        }
+
+        let object_store::GetResultPayload::Stream(stream) = client.get(path).await?.payload;
+
+        // AsyncReader can only emit std::io::Error.
+        let io_stream = stream.map_err(std::io::Error::other);
+        Ok(Download::AsyncRead(Box::new(StreamReader::new(io_stream))))
     }
 }
 
@@ -147,58 +171,24 @@ impl StorageBackend for S3Backend {
             .await
             .map_err(ServerError::storage_error)?;
 
-        Ok(RemoteFile::S3(S3RemoteFile {
-            region: self.config.region.clone(),
-            bucket: self.config.bucket.clone(),
-            key: name,
-        }))
+        Ok(self.db_ref(name))
     }
 
     async fn delete_file(&self, name: String) -> ServerResult<()> {
-        self.client
-            .delete(&name.into())
-            .await
-            .map_err(ServerError::storage_error)?;
+        self.client.delete(&name.into()).await?;
         Ok(())
     }
 
     async fn delete_file_db(&self, file: &RemoteFile) -> ServerResult<()> {
-        let (client, file) = self.get_client_from_db_ref(file).await?;
+        let (client, file) = self.get_client_from_db_ref(file)?;
 
-        client
-            .delete(&Path::from(file.key.as_ref()))
-            .await
-            .map_err(ServerError::storage_error)?;
+        client.delete(&Path::from(file.key.as_str())).await?;
         Ok(())
     }
 
     // TODO Pass references instead
     async fn download_file(&self, name: String, prefer_stream: bool) -> ServerResult<Download> {
-        if !prefer_stream {
-            let url = self
-                .client
-                .signed_url(Method::GET, &name.into(), Duration::from_mins(5))
-                .await
-                .map_err(ServerError::storage_error)?;
-            return Ok(Download::Url(url.to_string()));
-        }
-
-        let payload = self
-            .client
-            .get(&Path::from(name))
-            .await
-            .map_err(ServerError::storage_error)?
-            .payload;
-
-        let stream = match payload {
-            object_store::GetResultPayload::Stream(stream) => stream,
-        };
-
-        // AsyncReader can only emit std::io::Error.
-        let io_stream = stream.map_err(std::io::Error::other);
-
-        let reader: Box<dyn AsyncRead + Send + Unpin> = Box::new(StreamReader::new(io_stream));
-        Ok(Download::AsyncRead(reader))
+        Self::download_from(&self.client, &Path::from(name), prefer_stream).await
     }
 
     async fn download_file_db(
@@ -206,49 +196,12 @@ impl StorageBackend for S3Backend {
         file: &RemoteFile,
         prefer_stream: bool,
     ) -> ServerResult<Download> {
-        let s3 = match file {
-            RemoteFile::S3(s3) => s3,
-            _ => unreachable!(),
-        };
+        let (client, file) = self.get_client_from_db_ref(file)?;
 
-        if s3.bucket == self.config.bucket && s3.region == self.config.region {
-            return self.download_file(s3.key.clone(), prefer_stream).await;
-        };
-
-        let (client, s3) = self.get_client_from_db_ref(file).await?;
-        if !prefer_stream {
-            let url = client
-                .signed_url(
-                    Method::GET,
-                    &Path::from(s3.key.as_ref()),
-                    Duration::from_mins(5),
-                )
-                .await
-                .map_err(ServerError::storage_error)?;
-            return Ok(Download::Url(url.to_string()));
-        } else {
-            let payload = client
-                .get(&Path::from(s3.key.clone()))
-                .await
-                .map_err(ServerError::storage_error)?
-                .payload;
-
-            let stream = match payload {
-                object_store::GetResultPayload::Stream(stream) => stream,
-            };
-
-            let io_stream = stream.map_err(std::io::Error::other);
-
-            let reader: Box<dyn AsyncRead + Send + Unpin> = Box::new(StreamReader::new(io_stream));
-            Ok(Download::AsyncRead(reader))
-        }
+        Self::download_from(&client, &Path::from(file.key.as_str()), prefer_stream).await
     }
 
     async fn make_db_reference(&self, name: String) -> ServerResult<RemoteFile> {
-        Ok(RemoteFile::S3(S3RemoteFile {
-            region: self.config.region.clone(),
-            bucket: self.config.bucket.clone(),
-            key: name,
-        }))
+        Ok(self.db_ref(name))
     }
 }
