@@ -9,7 +9,7 @@ use futures::TryStreamExt as _;
 use object_store::aws::{AmazonS3, AmazonS3Builder};
 use object_store::path::Path;
 use object_store::signer::Signer;
-use object_store::ObjectStoreExt;
+use object_store::{ClientOptions, ObjectStoreExt};
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio_util::io::StreamReader;
@@ -75,6 +75,15 @@ pub struct S3RemoteFile {
 impl S3Backend {
     fn config_builder(config: &S3StorageConfig) -> AmazonS3Builder {
         let mut builder = AmazonS3Builder::from_env()
+            // Replaces all other client options and must come first.
+            .with_client_options(
+                ClientOptions::new()
+                    // The default is a global timeout for the whole request. This would break
+                    // large downloads.
+                    .with_timeout_disabled()
+                    // The read timeout applies for individual read operations, not the whole request.
+                    .with_read_timeout(Duration::from_secs(60)),
+            )
             // We allow HTTP, because using a plain HTTP connection common for testing.
             .with_allow_http(true)
             .with_region(&config.region)
