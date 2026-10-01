@@ -131,6 +131,12 @@ impl From<super::access::Error> for ServerError {
     }
 }
 
+impl From<object_store::Error> for ServerError {
+    fn from(error: object_store::Error) -> Self {
+        ErrorKind::StorageError(AnyError::new(error)).into()
+    }
+}
+
 impl StdError for ServerError {
     fn source(&self) -> Option<&(dyn StdError + 'static)> {
         match &self.kind {
