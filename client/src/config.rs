@@ -1,8 +1,8 @@
 //! Client configurations.
 //!
 //! Configuration files are stored under `$XDG_CONFIG_HOME/celler/config.toml`.
-//! We automatically write modified configurations back for a good end-user
-//! experience (e.g., `celler login`).
+//! Commands that modify the configuration (e.g., `celler login`) write it
+//! back with [`Config::save`].
 
 use std::collections::HashMap;
 use std::fs::{self, read_to_string, OpenOptions, Permissions};
@@ -87,9 +87,6 @@ impl ServerTokenConfig {
     }
 }
 
-/// Wrapper that automatically saves the config once dropped.
-pub struct ConfigWriteGuard<'a>(&'a mut Config);
-
 impl Config {
     /// Loads the configuration from the system.
     pub fn load() -> Result<Self> {
@@ -105,34 +102,31 @@ impl Config {
         Ok(Self { data, path })
     }
 
-    /// Returns a mutable reference to the configuration.
-    pub fn as_mut(&mut self) -> ConfigWriteGuard<'_> {
-        ConfigWriteGuard(self)
-    }
-
-    /// Saves the configuration back to the system, if possible.
+    /// Saves the configuration back to the system.
     pub fn save(&self) -> Result<()> {
-        if let Some(path) = &self.path {
-            let serialized = toml::to_string(&self.data)?;
+        let path = self
+            .path
+            .as_ref()
+            .ok_or_else(|| anyhow!("Could not determine the configuration file path"))?;
+        let serialized = toml::to_string(&self.data)?;
 
-            // This isn't atomic, so some other process might chmod it
-            // to something else before we write. We don't handle this case.
-            if path.exists() {
-                let permissions = Permissions::from_mode(FILE_MODE);
-                fs::set_permissions(path, permissions)?;
-            }
-
-            let mut file = OpenOptions::new()
-                .create(true)
-                .write(true)
-                .truncate(true)
-                .mode(FILE_MODE)
-                .open(path)?;
-
-            file.write_all(serialized.as_bytes())?;
-
-            tracing::debug!("Saved modified configuration to {:?}", path);
+        // This isn't atomic, so some other process might chmod it
+        // to something else before we write. We don't handle this case.
+        if path.exists() {
+            let permissions = Permissions::from_mode(FILE_MODE);
+            fs::set_permissions(path, permissions)?;
         }
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .truncate(true)
+            .mode(FILE_MODE)
+            .open(path)?;
+
+        file.write_all(serialized.as_bytes())?;
+
+        tracing::debug!("Saved modified configuration to {:?}", path);
 
         Ok(())
     }
@@ -143,6 +137,12 @@ impl Deref for Config {
 
     fn deref(&self) -> &Self::Target {
         &self.data
+    }
+}
+
+impl DerefMut for Config {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
     }
 }
 
@@ -192,28 +192,6 @@ impl ConfigData {
                     .ok_or_else(|| anyhow!("Server \"{}\" does not exist", server.as_str()))?;
                 Ok((server, config, cache))
             }
-        }
-    }
-}
-
-impl<'a> Deref for ConfigWriteGuard<'a> {
-    type Target = ConfigData;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0.data
-    }
-}
-
-impl<'a> DerefMut for ConfigWriteGuard<'a> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0.data
-    }
-}
-
-impl<'a> Drop for ConfigWriteGuard<'a> {
-    fn drop(&mut self) {
-        if let Err(e) = self.0.save() {
-            tracing::error!("Could not save modified configuration: {}", e);
         }
     }
 }
