@@ -112,6 +112,9 @@ let
 
           networking.firewall.allowedTCPPorts = [ 9000 ];
 
+          # Garage is only reachable via plain HTTP.
+          systemd.services.cellerd.environment.AWS_ALLOW_HTTP = "true";
+
           services.cellerd.settings = {
             storage = {
               type = "s3";

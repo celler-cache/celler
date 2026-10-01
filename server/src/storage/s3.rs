@@ -6,10 +6,10 @@ use std::time::Duration;
 use async_trait::async_trait;
 use axum::http::Method;
 use futures::TryStreamExt as _;
-use object_store::aws::{AmazonS3, AmazonS3Builder};
+use object_store::aws::{AmazonS3, AmazonS3Builder, AmazonS3ConfigKey};
 use object_store::path::Path;
 use object_store::signer::Signer;
-use object_store::{ClientOptions, ObjectStoreExt};
+use object_store::{ClientConfigKey, ObjectStoreExt};
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio_util::io::StreamReader;
@@ -75,17 +75,14 @@ pub struct S3RemoteFile {
 impl S3Backend {
     fn config_builder(config: &S3StorageConfig) -> AmazonS3Builder {
         let mut builder = AmazonS3Builder::from_env()
-            // Replaces all other client options and must come first.
-            .with_client_options(
-                ClientOptions::new()
-                    // The default is a global timeout for the whole request. This would break
-                    // large downloads.
-                    .with_timeout_disabled()
-                    // The read timeout applies for individual read operations, not the whole request.
-                    .with_read_timeout(Duration::from_secs(60)),
+            // The default is a global timeout of 30s for the whole request.
+            // This breaks large downloads. Make it long enough to not matter.
+            .with_config(AmazonS3ConfigKey::Client(ClientConfigKey::Timeout), "1day")
+            // The read timeout applies to individual read operations, not the whole request.
+            .with_config(
+                AmazonS3ConfigKey::Client(ClientConfigKey::ReadTimeout),
+                "60s",
             )
-            // We allow HTTP, because using a plain HTTP connection common for testing.
-            .with_allow_http(true)
             .with_region(&config.region)
             .with_bucket_name(&config.bucket)
             // Use virtual-hosted-style requests for AWS, but path-style requests for custom
