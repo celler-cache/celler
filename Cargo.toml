@@ -30,7 +30,6 @@ hex = "0.4.3"
 humantime = "2.2.0"
 lazy_static = "1.5.0"
 regex = "1.11.1"
-rsa = "0.10.0-rc.18"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.149"
 serde_with = "3.19.0"
