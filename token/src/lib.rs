@@ -225,9 +225,6 @@ pub enum Error {
     /// Base64 decode error: {0}
     Base64Error(base64::DecodeError),
 
-    /// RSA Key error: {0}
-    RsaKeyError(rsa::pkcs1::Error),
-
     /// Failure decoding the base64 layer of the base64 encoded PEM
     Utf8Error(std::str::Utf8Error),
 
