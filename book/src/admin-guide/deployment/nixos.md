@@ -15,7 +15,7 @@ The RS256 JWT secret can be generated with the `openssl` utility:
 
 ```bash
 $ nix shell nixpkgs#openssl
-$ openssl genrsa 4096 -out private-key.pem
+$ openssl genrsa -out private-key.pem 4096
 $ openssl rsa -in private-key.pem -pubout -out public-key.pem
 ```
 
