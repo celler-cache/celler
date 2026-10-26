@@ -28,15 +28,9 @@ path = "/var/lib/cellerd/storage"
 
 [jwt]
 rs256-public-key-file = "/etc/cellerd/public-key.pem"
-
-[chunking]
-nar-size-threshold = 4194304  # 4 MiB
-min-size = 2097152            # 2 MiB
-avg-size = 8388608            # 8 MiB
-max-size = 16777216           # 16 MiB
 ```
 
-The sections `[database]`, `[storage]`, `[jwt]`, and `[chunking]` are required.
+The sections `[database]`, `[storage]`, and `[jwt]` are required.
 Everything else is optional.
 
 ## Top-Level Options
@@ -143,10 +137,11 @@ Create tokens with `celler admin make-token` and the matching private key or sec
 ## `[chunking]`
 
 How uploaded NARs are split into chunks for deduplication.
+Without this section, chunking is disabled.
 For recommended values and trade-offs, see [Chunking](../admin-guide/chunking.md).
 
 All values are in bytes.
-All four options are required, even if chunking is disabled.
+If the section is present, all four options are required.
 
 | Option | Description |
 |---|---|

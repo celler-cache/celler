@@ -49,13 +49,7 @@ You can import the module in one of two ways:
         rs256-public-key-file = ./public-key.pem;
       };
 
-      # See the Chunking page for trade-offs and how to disable chunking.
-      chunking = {
-        nar-size-threshold = 4 * 1024 * 1024; # 4 MiB
-        min-size = 2 * 1024 * 1024; # 2 MiB
-        avg-size = 8 * 1024 * 1024; # 8 MiB
-        max-size = 16 * 1024 * 1024; # 16 MiB
-      };
+      # Chunking is off by default. To enable it, see the Chunking page.
     };
   };
 }

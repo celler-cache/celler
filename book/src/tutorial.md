@@ -60,14 +60,6 @@ path = "storage"
 # Accept tokens signed with our private key.
 [jwt]
 rs256-public-key-file = "public-key.pem"
-
-# Split large files into chunks for deduplication.
-# These are the recommended values.
-[chunking]
-nar-size-threshold = 4194304  # 4 MiB
-min-size = 2097152            # 2 MiB
-avg-size = 8388608            # 8 MiB
-max-size = 16777216           # 16 MiB
 ```
 
 All options are described in the [server configuration reference](reference/server-config.md).

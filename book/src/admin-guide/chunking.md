@@ -27,19 +27,12 @@ the chunks, the more requests Celler sends. Hosted S3 providers limit how
 many requests you can send. If Celler hits that limit, downloads become very
 slow or fail.
 
-## Disabling Chunking
+## Enabling and Disabling Chunking
 
-Set `nar-size-threshold` to `0`:
-
-```toml
-[chunking]
-nar-size-threshold = 0
-
-# Not used while chunking is disabled, but required.
-min-size = 2097152    # 2 MiB
-avg-size = 8388608    # 8 MiB
-max-size = 16777216   # 16 MiB
-```
+Chunking is off unless the server configuration has a `[chunking]` section.
+To enable it, add the section, for example with the
+[recommended values](#recommended-values). To disable it again, remove the
+section.
 
 This only affects new uploads. NARs that are already chunked stay chunked.
 Celler still stores identical NARs only once, even with chunking disabled.

@@ -29,7 +29,7 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use crate::compression::{CompressionStream, CompressorFn};
-use crate::config::CompressionType;
+use crate::config::{ChunkingConfig, CompressionType};
 use crate::error::{ErrorKind, ServerError, ServerResult};
 use crate::narinfo::Compression;
 use crate::{RequestState, State};
@@ -268,12 +268,19 @@ async fn upload_path_new(
     database: &DatabaseConnection,
     state: &State,
 ) -> ServerResult<Json<UploadPathResult>> {
-    let nar_size_threshold = state.config.chunking.nar_size_threshold;
-
-    if nar_size_threshold == 0 || upload_info.nar_size < nar_size_threshold {
-        upload_path_new_unchunked(username, cache, upload_info, stream, database, state).await
+    if let Some(chunking_config) = state.config.chunking_for(upload_info.nar_size) {
+        upload_path_new_chunked(
+            username,
+            cache,
+            upload_info,
+            stream,
+            database,
+            state,
+            chunking_config,
+        )
+        .await
     } else {
-        upload_path_new_chunked(username, cache, upload_info, stream, database, state).await
+        upload_path_new_unchunked(username, cache, upload_info, stream, database, state).await
     }
 }
 
@@ -285,8 +292,8 @@ async fn upload_path_new_chunked(
     stream: impl AsyncBufRead + Send + Unpin + 'static,
     database: &DatabaseConnection,
     state: &State,
+    chunking_config: &ChunkingConfig,
 ) -> ServerResult<Json<UploadPathResult>> {
-    let chunking_config = &state.config.chunking;
     let compression_config = &state.config.compression;
     let compression_type = compression_config.r#type;
     let compression_level = compression_config.level();
