@@ -1,26 +1,45 @@
 # Introduction
 
-**Celler** is a self-hostable Nix Binary Cache server backed by an S3-compatible storage provider.
-It has support for global deduplication and garbage collection.
+**Celler** is a self-hosted binary cache for Nix.
+Push your build results to it, and Nix on your other machines and in CI downloads them instead of building them again.
+
+```console
+$ celler push hello $(which celler)
+⚙️ Pushing 1 paths to "hello" on "local" (0 already cached, 6 in upstream)...
+✅ h6pjy7d28mj6wihhn4fz2kqx7x9wy4my-celler-0.1.0 (50.09 MiB, 21.54 MiB/s)
+```
+
+Celler is working towards a stable release.
+Until then, the configuration and APIs may still change between releases.
+We are looking for more testers!
 
 > [!IMPORTANT]
-> If you come here, because your server didn't start up anymore after an update, please refer to the [changelog](https://github.com/celler-cache/celler/blob/main/CHANGELOG.md) and the [Attic migration guide](admin-guide/attic-migration.md).
+> **Upgrading from Attic or an older Celler?** The configuration format has changed.
+> See the [changelog](https://github.com/celler-cache/celler/blob/main/CHANGELOG.md) and the [Attic migration guide](admin-guide/attic-migration.md).
 
-Celler is still an early prototype and is looking for more testers. Want to jump in? [Start your own Celler server](./tutorial.md) in 15 minutes.
+## Features
 
-```
-⚙️ Pushing 5 paths to "demo" on "local" (566 already cached, 2001 in upstream)...
-✅ gnvi1x7r8kl3clzx0d266wi82fgyzidv-steam-run-fhs (29.69 MiB/s)
-✅ rw7bx7ak2p02ljm3z4hhpkjlr8rzg6xz-steam-fhs (30.56 MiB/s)
-✅ y92f9y7qhkpcvrqhzvf6k40j6iaxddq8-0p36ammvgyr55q9w75845kw4fw1c65ln-source (19.96 MiB/s)
-🕒 vscode-1.74.2        ███████████████████████████████████████  345.66 MiB (41.32 MiB/s)
-🕓 zoom-5.12.9.367      ███████████████████████████              329.36 MiB (39.47 MiB/s)
-```
+- **Works with plain Nix**: Nix pulls from a Celler cache like from any other binary cache.
+  The `celler` client pushes store paths and sets up Nix for you.
+- **Many caches, one server**: Create a private cache for yourself, one for your team, and a public one for your project.
+  Caches are [isolated](concepts/security.md#isolation-between-caches): what happens in one cache can't affect the others.
+- **Stores everything once**: If the same data is pushed to several caches, Celler stores it only once.
+  Optional [chunking](admin-guide/chunking.md) also deduplicates data shared between similar store paths.
+- **Signing keys stay on the server**: The server signs store paths when Nix downloads them.
+  People who push to a cache never see its signing key.
+- **Automatic cleanup**: Celler can delete store paths that haven't been used for a while.
+  You choose how long to keep them, per cache.
+- **Fits any size**: From a single-machine setup with local storage to several API servers in front of S3-compatible storage.
 
-## Goals
+## Where to Go Next
 
-- **Multi-Tenancy**: Create a private cache for yourself, and one for friends and co-workers. Tenants are mutually untrusting and cannot pollute the views of other caches.
-- **Global Deduplication**: Individual caches (tenants) are simply restricted views of the content-addressed NAR Store and Chunk Store. When paths are uploaded, a mapping is created to grant the local cache access to the global NAR.
-- **Managed Signing**: Signing is done on-the-fly by the server when store paths are fetched. The user pushing store paths does not have access to the signing key.
-- **Scalability**: Celler can be easily replicated. It's designed to be deployed to serverless platforms like fly.io but also works nicely in a single-machine setup.
-- **Garbage Collection**: Unused store paths can be garbage-collected in an LRU manner.
+- **Try it out**: The [Tutorial](tutorial.md) runs a Celler server on your machine in about 15 minutes.
+- **Use a cache someone else runs**: See the [User Guide](user-guide/index.md).
+- **Run your own server**: See the [Admin Guide](admin-guide/index.md).
+
+## About the Name
+
+_Celler_ is Catalan for a wine cellar, the place where you store all your valuable wines.
+Celler is where you store your valuable build results.
+
+And of course, Celler is a fork of [Attic](https://github.com/zhaofengli/attic), the self-hosted Nix binary cache by Zhaofeng Li.
