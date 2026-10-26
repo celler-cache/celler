@@ -1,6 +1,6 @@
 # User Guide
 
-## Logging in
+## Logging In
 
 You should have received an `celler login` command from an admin like the following:
 
@@ -16,7 +16,7 @@ To select the `foo` cache from server `central`, use one of the following:
 
 To configure the default server, set `default-server` in `~/.config/celler/config.toml`.
 
-## Enabling a cache
+## Enabling a Cache
 
 To configure Nix to automatically use cache `foo`:
 
@@ -54,11 +54,11 @@ On NixOS, you can configure the cache declaratively in your system configuration
 }
 ```
 
-## Disabling a cache
+## Disabling a Cache
 
 To configure Nix to no longer use a cache, remove the corresponding entries from the list of `substituters` and `trusted-public-keys` in `~/.config/nix/nix.conf`
 
-## Pushing to the cache
+## Pushing to the Cache
 
 To push a store path to cache `foo`:
 

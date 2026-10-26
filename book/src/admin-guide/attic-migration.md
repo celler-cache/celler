@@ -10,7 +10,7 @@ This guide explains how to migrate from Attic to Celler.
 > [!NOTE]
 > The Celler server's API is deliberately not compatible with the Attic CLI tool. Use the Celler CLI instead.
 
-### Step 0: Backup Your Database
+### Step 0: Back Up Your Database
 
 Before proceeding, make sure to backup your database.
 
@@ -18,7 +18,7 @@ Before proceeding, make sure to backup your database.
 
 Adapt your NixOS configuration to use Celler instead of Attic:
 
-- Point your Flake input to `github:blitz/celler`.
+- Point your Flake input to `github:celler-cache/celler`.
 - Rename `services.atticd` to `services.cellerd`.
 
 JWT secrets are not configured via environment variables in Celler. Existing BASE64-encoded RS256 private keys have to be decoded via `base64 -d`. See [the deployment guide](deployment/nixos.md) for how to convert it to a public key and add it to the configuration.
@@ -29,5 +29,5 @@ Similarly, HS256 keys can be decoded via `base64 -d` and passed to `services.cel
 
 Client configuration needs to be adapted as well.
 
-- Point your Flake input to `github:blitz/celler`.
+- Point your Flake input to `github:celler-cache/celler`.
 - Replace the `attic` package with `celler` in your client configuration.

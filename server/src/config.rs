@@ -192,17 +192,11 @@ pub enum StorageConfig {
 
 /// Data chunking.
 ///
-/// This must be set. The reason is that this allows
-/// us to provide a new set of recommended "defaults" for newer
-/// deployments without affecting existing ones.
+/// This has no defaults, so that recommended values can change
+/// without affecting existing deployments. Changing the values
+/// moves chunk cutpoints, which hurts deduplication for a while.
 ///
-/// Warning: If you change any of the values here, it will be
-/// difficult to reuse existing chunks for newly-uploaded NARs
-/// since the cutpoints will be different. As a result, the
-/// deduplication ratio will suffer for a while after the change.
-///
-/// `atticadm test-chunking` provides a way to test chunking
-/// on a set of files so you can fine-tune the values.
+/// See the "Chunking" chapter of the book for recommended values.
 #[derive(Debug, Clone, Deserialize)]
 pub struct ChunkingConfig {
     /// The minimum NAR size to trigger chunking.
@@ -211,8 +205,6 @@ pub struct ChunkingConfig {
     /// NARs.
     ///
     /// If 1, all newly-uploaded NARs are chunked.
-    ///
-    /// By default, the threshold is 128KB.
     #[serde(rename = "nar-size-threshold")]
     pub nar_size_threshold: usize,
 
@@ -267,7 +259,7 @@ pub struct GarbageCollectionConfig {
     /// The frequency to run garbage collection at.
     ///
     /// If zero, automatic garbage collection is disabled, but
-    /// it can still be run manually with `atticd --mode garbage-collector-once`.
+    /// it can still be run manually with `cellerd --mode garbage-collector-once`.
     #[serde(with = "humantime_serde", default = "default_gc_interval")]
     pub interval: Duration,
 

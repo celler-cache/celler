@@ -5,5 +5,5 @@ src = "src"
 title = "Celler"
 
 [output.html]
-git-repository-url = "https://github.com/blitz/celler"
-edit-url-template = "https://github.com/blitz/celler/edit/main/book/{path}"
+git-repository-url = "https://github.com/celler-cache/celler"
+edit-url-template = "https://github.com/celler-cache/celler/edit/main/book/{path}"

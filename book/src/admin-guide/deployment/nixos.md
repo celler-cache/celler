@@ -1,6 +1,6 @@
 # Deploying to NixOS
 
-Celler provides [a NixOS module](https://github.com/blitz/celler/blob/main/nixos/cellerd.nix) that allows you to deploy the Celler Server on a NixOS machine.
+Celler provides [a NixOS module](https://github.com/celler-cache/celler/blob/main/nixos/cellerd.nix) that allows you to deploy the Celler Server on a NixOS machine.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ The RS256 JWT secret can be generated with the `openssl` utility:
 
 ```bash
 $ nix shell nixpkgs#openssl
-$ openssl genrsa 4096 -out private-key.pem
+$ openssl genrsa -out private-key.pem 4096
 $ openssl rsa -in private-key.pem -pubout -out public-key.pem
 ```
 
@@ -27,8 +27,8 @@ The public key will be part of the server configuration.
 
 You can import the module in one of two ways:
 
-- Ad-hoc: Import the `nixos/cellerd.nix` from [the repository](https://github.com/blitz/celler).
-- Flakes: Add `github:blitz/celler` as an input, then import `celler.nixosModules.cellerd`.
+- Ad-hoc: Import the `nixos/cellerd.nix` from [the repository](https://github.com/celler-cache/celler).
+- Flakes: Add `github:celler-cache/celler` as an input, then import `celler.nixosModules.cellerd`.
 
 ## Configuration
 
@@ -49,32 +49,20 @@ You can import the module in one of two ways:
         rs256-public-key-file = ./public-key.pem;
       };
 
-      # Data chunking
-      #
-      # Warning: If you change any of the values here, it will be
-      # difficult to reuse existing chunks for newly-uploaded NARs
-      # since the cutpoints will be different. As a result, the
-      # deduplication ratio will suffer for a while after the change.
+      # See the Chunking page for trade-offs and how to disable chunking.
       chunking = {
-        # The minimum NAR size to trigger chunking
-        #
-        # If 0, chunking is disabled entirely for newly-uploaded NARs.
-        # If 1, all NARs are chunked.
-        nar-size-threshold = 64 * 1024; # 64 KiB
-
-        # The preferred minimum size of a chunk, in bytes
-        min-size = 16 * 1024; # 16 KiB
-
-        # The preferred average size of a chunk, in bytes
-        avg-size = 64 * 1024; # 64 KiB
-
-        # The preferred maximum size of a chunk, in bytes
-        max-size = 256 * 1024; # 256 KiB
+        nar-size-threshold = 4 * 1024 * 1024; # 4 MiB
+        min-size = 2 * 1024 * 1024; # 2 MiB
+        avg-size = 8 * 1024 * 1024; # 8 MiB
+        max-size = 16 * 1024 * 1024; # 16 MiB
       };
     };
   };
 }
 ```
+
+`settings` accepts all options from the [server configuration reference](../../reference/server-config.md).
+Unless you configure them, the module uses SQLite and local storage in `/var/lib/cellerd`.
 
 After the new configuration is deployed, the Celler Server will be accessible on port 8080.
 It's highly recommended to place it behind a reverse proxy like [NGINX](https://nixos.wiki/wiki/Nginx) to provide HTTPS.

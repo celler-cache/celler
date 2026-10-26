@@ -1,65 +1,90 @@
 # Chunking
 
-Celler can optionally use the [FastCDC
-algorithm](https://www.usenix.org/conference/atc16/technical-sessions/presentation/xia)
-to split uploaded NARs into chunks for deduplication. For typical cache content,
-this significantly reduces the amount of storage required in the underlying
-block storage.
+Celler can split uploaded NARs into chunks with the [FastCDC
+algorithm](https://www.usenix.org/conference/atc16/technical-sessions/presentation/xia),
+so that data shared between NARs is stored only once. This saves storage
+space, but makes Celler slower and can get it throttled by S3 providers.
 
-## Considerations For Enabling Chunking
+> [!IMPORTANT]
+> Only enable chunking if you need the storage savings. If you enable it, start with
+> the [recommended values](#recommended-values).
 
-Without chunking, Celler can typically serve pre-signed URLs to the store paths
-on the underlying block storage. This shifts the burden of downloading store
-paths to the requesting client.
+All chunking options are described in the
+[server configuration reference](../reference/server-config.md#chunking).
 
-With chunking enabled, the Celler daemon has to download individual chunks and
-assemble them itself. This substantially increases the work the daemon has to
-perform itself.
+## Why Chunking Has a Cost
 
-In addition, chunking, especially with small chunks, will cause a high rate of
-API calls to the underlying block storage from the Celler daemon. Depending on
-your block storage provider, this may cause Celler's requests to be rate
-limited. When this happens, downloading store paths becomes either very slow or
-will fail entirely.
+Without chunking, Celler can usually let clients download store paths
+directly from the storage backend, using pre-signed URLs. The Celler server
+doesn't have to handle the data itself.
 
-Celler's behavior under rate limiting is still not ideal and will improve when
-the respective code paths have been made more robust. But even with that in
-mind, the rate limiting issue and the increased strain on the Celler daemon may
-outweigh the storage cost savings.
+With chunking, the Celler server downloads every chunk of a NAR from the
+storage backend and puts the NAR back together for the client. This is much
+more work for the server.
 
-## Configuration
+Every chunk is also a separate request to the storage backend. The smaller
+the chunks, the more requests Celler sends. Hosted S3 providers limit how
+many requests you can send. If Celler hits that limit, downloads become very
+slow or fail.
 
-There are four main parameters that control chunking in Celler:
+## Disabling Chunking
 
-- `nar-size-threshold`: The minimum NAR size to trigger chunking
-    - When set to 0, chunking is disabled entirely for newly-uploaded NARs
-    - When set to 1, all newly-uploaded NARs are chunked
-- `min-size`: The preferred minimum size of a chunk, in bytes
-- `avg-size`: The preferred average size of a chunk, in bytes
-- `max-size`: The preferred maximum size of a chunk, in bytes
-
-These parameters are included in the `[chunking]` section in the configuration:
+Set `nar-size-threshold` to `0`:
 
 ```toml
-# Data chunking
-#
-# Warning: If you change any of the values here, it will be
-# difficult to reuse existing chunks for newly-uploaded NARs
-# since the cutpoints will be different. As a result, the
-# deduplication ratio will suffer for a while after the change.
 [chunking]
-# The minimum NAR size to trigger chunking
-#
-# If 0, chunking is disabled entirely for newly-uploaded NARs.
-# If 1, all newly-uploaded NARs are chunked.
-nar-size-threshold = 131072 # chunk files that are 128 KiB or larger
+nar-size-threshold = 0
 
-# The preferred minimum size of a chunk, in bytes
-min-size = 65536            # 64 KiB
-
-# The preferred average size of a chunk, in bytes
-avg-size = 131072           # 128 KiB
-
-# The preferred maximum size of a chunk, in bytes
-max-size = 262144           # 256 KiB
+# Not used while chunking is disabled, but required.
+min-size = 2097152    # 2 MiB
+avg-size = 8388608    # 8 MiB
+max-size = 16777216   # 16 MiB
 ```
+
+This only affects new uploads. NARs that are already chunked stay chunked.
+Celler still stores identical NARs only once, even with chunking disabled.
+
+## Recommended Values
+
+These values have proven to work well in a stable setup:
+
+```toml
+[chunking]
+# Only chunk NARs that are 4 MiB or larger.
+nar-size-threshold = 4194304  # 4 MiB
+
+min-size = 2097152            # 2 MiB
+avg-size = 8388608            # 8 MiB
+max-size = 16777216           # 16 MiB
+```
+
+## Using Smaller Chunks
+
+You can experiment with smaller chunks. They deduplicate better, so Celler
+needs less storage space. In exchange, Celler sends more requests to the
+storage backend, which makes it slower. With a hosted S3 provider, small
+chunks _will_ cause throttling.
+
+If you run your own S3 server, such as [Garage](https://garagehq.deuxfleurs.fr/),
+or use local storage, nobody throttles your requests. Smaller chunks can be
+a good trade-off there, as long as the performance is good enough for you.
+
+For example, these values use chunks that are about 64 times smaller than
+the recommended ones:
+
+```toml
+[chunking]
+nar-size-threshold = 131072  # 128 KiB
+min-size = 65536             # 64 KiB
+avg-size = 131072            # 128 KiB
+max-size = 262144            # 256 KiB
+```
+
+Measure how fast downloads are and how much storage you save before you
+settle on smaller values.
+
+## Changing Values Later
+
+Choose your values before you upload a lot of data. If you change them
+later, new uploads are split at different points, so they share few chunks
+with existing data. Deduplication will be worse for a while.
