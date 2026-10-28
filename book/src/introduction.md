@@ -3,12 +3,6 @@
 **Celler** is a self-hosted binary cache for Nix.
 Push your build results to it, and Nix on your other machines and in CI downloads them instead of building them again.
 
-```console
-$ celler push hello $(which celler)
-⚙️ Pushing 1 paths to "hello" on "local" (0 already cached, 6 in upstream)...
-✅ h6pjy7d28mj6wihhn4fz2kqx7x9wy4my-celler-0.1.0 (50.09 MiB, 21.54 MiB/s)
-```
-
 Celler is working towards a stable release.
 Until then, the configuration and APIs may still change between releases.
 We are looking for more testers!
@@ -25,11 +19,11 @@ We are looking for more testers!
   Caches are [isolated](concepts/security.md#isolation-between-caches): what happens in one cache can't affect the others.
 - **Stores everything once**: If the same data is pushed to several caches, Celler stores it only once.
   Optional [chunking](admin-guide/chunking.md) also deduplicates data shared between similar store paths.
+- **Fits any size**: From a single-machine setup with local storage to several API servers in front of S3-compatible storage, Celler scales to any size.
 - **Signing keys stay on the server**: The server signs store paths when Nix downloads them.
   People who push to a cache never see its signing key.
 - **Automatic cleanup**: Celler can delete store paths that haven't been used for a while.
   You choose how long to keep them, per cache.
-- **Fits any size**: From a single-machine setup with local storage to several API servers in front of S3-compatible storage.
 
 ## Where to Go Next
 

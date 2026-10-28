@@ -13,7 +13,7 @@ Celler provides [a NixOS module](https://github.com/celler-cache/celler/blob/mai
 
 The RS256 JWT secret can be generated with the `openssl` utility:
 
-```bash
+```console
 $ nix shell nixpkgs#openssl
 $ openssl genrsa -out private-key.pem 4096
 $ openssl rsa -in private-key.pem -pubout -out public-key.pem

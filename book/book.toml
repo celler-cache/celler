@@ -7,3 +7,5 @@ title = "Celler"
 [output.html]
 git-repository-url = "https://github.com/celler-cache/celler"
 edit-url-template = "https://github.com/celler-cache/celler/edit/main/book/{path}"
+default-theme = "rust"
+preferred-dark-theme = "ayu"

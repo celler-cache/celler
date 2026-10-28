@@ -4,8 +4,8 @@
 
 You should have received an `celler login` command from an admin like the following:
 
-```
-celler login central https://celler.domain.tld/ eyJ...
+```console
+$ celler login central https://celler.domain.tld/ eyJ...
 ```
 
 The `celler` client can work with multiple servers at the same time.
@@ -20,8 +20,8 @@ To configure the default server, set `default-server` in `~/.config/celler/confi
 
 To configure Nix to automatically use cache `foo`:
 
-```
-celler use foo
+```console
+$ celler use foo
 ```
 
 This adds the binary cache to your `~/.config/nix/nix.conf` and configures the credentials required to access it.
@@ -62,13 +62,13 @@ To configure Nix to no longer use a cache, remove the corresponding entries from
 
 To push a store path to cache `foo`:
 
-```bash
-celler push foo /nix/store/...
+```console
+$ celler push foo /nix/store/...
 ```
 
 Other examples include:
 
-```bash
-celler push foo ./result
-celler push foo /run/current-system
+```console
+$ celler push foo ./result
+$ celler push foo /run/current-system
 ```
