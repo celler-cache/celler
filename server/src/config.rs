@@ -88,8 +88,9 @@ pub struct Config {
     /// Storage.
     pub storage: StorageConfig,
 
-    /// Data chunking.
-    pub chunking: ChunkingConfig,
+    /// Data chunking. If unset, chunking is disabled.
+    #[serde(default)]
+    pub chunking: Option<ChunkingConfig>,
 
     /// Compression.
     #[serde(default = "Default::default")]
@@ -192,17 +193,12 @@ pub enum StorageConfig {
 
 /// Data chunking.
 ///
-/// This must be set. The reason is that this allows
-/// us to provide a new set of recommended "defaults" for newer
-/// deployments without affecting existing ones.
+/// If set, all values are required. There are no defaults, so that
+/// recommended values can change without affecting existing deployments.
+/// Changing the values moves chunk cutpoints, which hurts deduplication
+/// for a while.
 ///
-/// Warning: If you change any of the values here, it will be
-/// difficult to reuse existing chunks for newly-uploaded NARs
-/// since the cutpoints will be different. As a result, the
-/// deduplication ratio will suffer for a while after the change.
-///
-/// `atticadm test-chunking` provides a way to test chunking
-/// on a set of files so you can fine-tune the values.
+/// See the "Chunking" chapter of the book for recommended values.
 #[derive(Debug, Clone, Deserialize)]
 pub struct ChunkingConfig {
     /// The minimum NAR size to trigger chunking.
@@ -211,8 +207,6 @@ pub struct ChunkingConfig {
     /// NARs.
     ///
     /// If 1, all newly-uploaded NARs are chunked.
-    ///
-    /// By default, the threshold is 128KB.
     #[serde(rename = "nar-size-threshold")]
     pub nar_size_threshold: usize,
 
@@ -267,7 +261,7 @@ pub struct GarbageCollectionConfig {
     /// The frequency to run garbage collection at.
     ///
     /// If zero, automatic garbage collection is disabled, but
-    /// it can still be run manually with `atticd --mode garbage-collector-once`.
+    /// it can still be run manually with `cellerd --mode garbage-collector-once`.
     #[serde(with = "humantime_serde", default = "default_gc_interval")]
     pub interval: Duration,
 
@@ -296,6 +290,16 @@ impl CompressionConfig {
             CompressionType::Xz => CompressionLevel::Precise(2),
             _ => CompressionLevel::Default,
         }
+    }
+}
+
+impl Config {
+    /// Returns the chunking configuration for a NAR of this size,
+    /// or `None` if it should not be chunked.
+    pub fn chunking_for(&self, nar_size: usize) -> Option<&ChunkingConfig> {
+        self.chunking
+            .as_ref()
+            .filter(|c| c.nar_size_threshold != 0 && nar_size >= c.nar_size_threshold)
     }
 }
 
@@ -418,4 +422,82 @@ pub fn get_xdg_data_path() -> anyhow::Result<PathBuf> {
     let data_path = xdg_dirs.create_data_directory("")?;
 
     Ok(data_path)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Parses a minimal config with `extra` appended.
+    fn parse_config(name: &str, extra: &str) -> Config {
+        let key_file = std::env::temp_dir().join(format!(
+            "celler-config-test-{}-{name}.key",
+            std::process::id()
+        ));
+        std::fs::write(&key_file, b"secret").unwrap();
+
+        let toml = format!(
+            r#"
+            [database]
+            url = "sqlite://server.db"
+
+            [storage]
+            type = "local"
+            path = "storage"
+
+            [jwt]
+            hs256-secret-key-file = "{}"
+
+            {extra}
+            "#,
+            key_file.display()
+        );
+
+        let config = toml::from_str(&toml);
+        std::fs::remove_file(&key_file).unwrap();
+        config.unwrap()
+    }
+
+    #[test]
+    fn test_chunking_disabled_without_section() {
+        let config = parse_config("no-section", "");
+
+        assert!(config.chunking.is_none());
+        assert!(config.chunking_for(1 << 30).is_none());
+    }
+
+    #[test]
+    fn test_chunking_threshold() {
+        let config = parse_config(
+            "threshold",
+            r#"
+            [chunking]
+            nar-size-threshold = 4194304
+            min-size = 2097152
+            avg-size = 8388608
+            max-size = 16777216
+            "#,
+        );
+
+        assert!(config.chunking_for(4194303).is_none());
+        assert!(config.chunking_for(4194304).is_some());
+    }
+
+    /// Make sure that existing configurations that disable chunking via
+    /// `nar-size-threshold = 0` still work.
+    #[test]
+    fn test_chunking_disabled_with_zero_threshold() {
+        let config = parse_config(
+            "zero-threshold",
+            r#"
+            [chunking]
+            nar-size-threshold = 0
+            min-size = 2097152
+            avg-size = 8388608
+            max-size = 16777216
+            "#,
+        );
+
+        assert!(config.chunking_for(1 << 30).is_none());
+    }
 }

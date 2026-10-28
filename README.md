@@ -3,7 +3,7 @@
 **Celler** is a self-hostable Nix Binary Cache server backed by an S3-compatible storage provider.
 It has support for global deduplication and garbage collection.
 
-It is derived from [Attic](https://github.com/zhaofengli/attic). See the [migration guide](https://celler.x86.org/admin-guide/attic-migration.html) for migration instructions.
+It is derived from [Attic](https://github.com/zhaofengli/attic). See the [migration guide](https://celler.x86.lol/admin-guide/attic-migration.html) for migration instructions.
 
 ## Rationale for Forking
 
