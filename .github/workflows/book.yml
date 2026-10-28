@@ -16,7 +16,7 @@ jobs:
     name: Deploy
 
     runs-on: ubuntu-latest
-    if: github.repository == 'blitz/celler'
+    if: github.repository == 'celler-cache/celler'
 
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
