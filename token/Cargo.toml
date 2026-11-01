@@ -16,4 +16,4 @@ serde_with.workspace = true
 tracing.workspace = true
 
 indexmap = { version = "2.10.0", features = ["serde"] }
-jwt-simple = { version = "0.12.15", default-features = false, features = ["pure-rust"] }
+jwt-simple = { version = "0.15.0", default-features = false, features = ["pure-rust"] }
