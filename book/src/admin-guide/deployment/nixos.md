@@ -32,8 +32,6 @@ You can import the module in one of two ways:
 
 ## Configuration
 
-> Note: These options are subject to change.
-
 ```nix
 {
   services.cellerd = {
