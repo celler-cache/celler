@@ -30,6 +30,7 @@ We are looking for more testers!
 - **Try it out**: The [Tutorial](tutorial.md) runs a Celler server on your machine in about 15 minutes.
 - **Use a cache someone else runs**: See the [User Guide](user-guide/index.md).
 - **Run your own server**: See the [Admin Guide](admin-guide/index.md).
+- **Ask questions or share feedback**: Chat with us on Matrix in [#celler:chat.x86.lol](https://matrix.to/#/%23celler:chat.x86.lol).
 
 ## About the Name
 
