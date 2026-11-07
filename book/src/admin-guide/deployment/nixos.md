@@ -32,8 +32,6 @@ You can import the module in one of two ways:
 
 ## Configuration
 
-> Note: These options are subject to change.
-
 ```nix
 {
   services.cellerd = {
@@ -59,4 +57,4 @@ You can import the module in one of two ways:
 Unless you configure them, the module uses SQLite and local storage in `/var/lib/cellerd`.
 
 After the new configuration is deployed, the Celler Server will be accessible on port 8080.
-It's highly recommended to place it behind a reverse proxy like [NGINX](https://nixos.wiki/wiki/Nginx) to provide HTTPS.
+It's highly recommended to place it behind a reverse proxy like [NGINX](https://wiki.nixos.org/wiki/Nginx) to provide HTTPS.

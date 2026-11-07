@@ -1,11 +1,16 @@
 # Introduction
 
+<div class="celler-intro">
+<img src="images/logo.webp" alt="Celler logo" width="140" height="140">
+
 **Celler** is a self-hosted binary cache for Nix.
 Push your build results to it, and Nix on your other machines and in CI downloads them instead of building them again.
 
 Celler is working towards a stable release.
 Until then, the configuration and APIs may still change between releases.
 We are looking for more testers!
+
+</div>
 
 > [!IMPORTANT]
 > **Upgrading from Attic or an older Celler?** The configuration format has changed.
@@ -30,6 +35,7 @@ We are looking for more testers!
 - **Try it out**: The [Tutorial](tutorial.md) runs a Celler server on your machine in about 15 minutes.
 - **Use a cache someone else runs**: See the [User Guide](user-guide/index.md).
 - **Run your own server**: See the [Admin Guide](admin-guide/index.md).
+- **Ask questions or share feedback**: Chat with us on Matrix in [#celler:chat.x86.lol](https://matrix.to/#/%23celler:chat.x86.lol).
 
 ## About the Name
 

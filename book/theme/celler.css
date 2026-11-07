@@ -1,0 +1,110 @@
+/* Fraunces 72pt SemiBold, subset to Latin. SIL Open Font License 1.1,
+   see the license metadata in the font file. */
+@font-face {
+    font-family: "Fraunces";
+    font-weight: 600;
+    font-display: swap;
+    src: url("../fonts/fraunces-semibold.woff2") format("woff2");
+}
+
+/* Source Sans 3 variable fonts, converted to WOFF2 but otherwise unmodified.
+   They must stay unmodified: "Source" is a Reserved Font Name under their
+   SIL Open Font License 1.1, so subsetting would require renaming them. */
+@font-face {
+    font-family: "Source Sans 3";
+    font-weight: 200 900;
+    font-display: swap;
+    src: url("../fonts/SourceSans3VF-Upright.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Source Sans 3";
+    font-weight: 200 900;
+    font-style: italic;
+    font-display: swap;
+    src: url("../fonts/SourceSans3VF-Italic.woff2") format("woff2");
+}
+
+/* Body text. Code keeps mdbook's monospace font. */
+html {
+    font-family: "Source Sans 3", "Open Sans", sans-serif;
+}
+
+.content :is(h1, h2, h3, h4, h5, h6),
+.menu-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+}
+
+/* Colours derived from the logo's wine tones (#481122 and #712E42).
+   The book only offers the Rust theme (see book.toml), so these only
+   override the accents of mdbook's light themes. */
+.light, .rust, html:not(.js) {
+    --celler-title: #481122;
+    --links: #8c3a54;
+    --footnote-highlight: #8c3a54;
+    --search-mark-bg: #f0b3c4;
+    --blockquote-note-color: #6b5a60;
+    --blockquote-tip-color: #5e7a3a;
+    --blockquote-important-color: #712e42;
+    --blockquote-warning-color: #a8661a;
+    --blockquote-caution-color: #c0281e;
+
+    --sidebar-bg: #3a0e1c;
+    --sidebar-fg: #eadde1;
+    --sidebar-non-existant: #a78893;
+    --sidebar-active: #f0b3c4;
+    --sidebar-spacer: #521a2b;
+    --sidebar-header-border-color: #f0b3c4;
+    --scrollbar: var(--sidebar-fg);
+}
+
+.menu-title {
+    color: var(--celler-title);
+}
+
+/* Only one theme is offered, so hide mdbook's theme picker. */
+#mdbook-theme-toggle {
+    display: none;
+}
+
+/* Small logo in front of the book title in the top bar. */
+.menu-title::before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-right: 0.3em;
+    vertical-align: -0.12em;
+    background: url("../images/logo.webp") center / contain no-repeat;
+}
+
+/* Front page: logo to the right of the opening paragraphs. */
+.celler-intro {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 2em;
+    align-items: center;
+}
+
+.celler-intro > p {
+    grid-column: 1;
+}
+
+/* Margins don't collapse inside a grid, so drop one to keep the usual gap. */
+.celler-intro > p + p {
+    margin-top: 0;
+}
+
+.celler-intro > img {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: 140px;
+    height: auto;
+}
+
+@media (max-width: 600px) {
+    .celler-intro > img {
+        width: 90px;
+    }
+}

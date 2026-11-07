@@ -5,7 +5,7 @@ You don't need NixOS, S3, or a database server: everything lives in a single dir
 
 You need:
 
-- [Nix](https://nixos.org/download/) with [flakes enabled](https://nixos.wiki/wiki/Flakes#Enable_flakes_permanently_in_NixOS)
+- [Nix](https://nixos.org/download/) with [flakes enabled](https://wiki.nixos.org/wiki/Flakes#Enabling_flakes_permanently)
 - Two terminal windows (or tabs)
 
 This setup is for trying Celler out.

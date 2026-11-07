@@ -5,7 +5,9 @@ src = "src"
 title = "Celler"
 
 [output.html]
+additional-css = ["theme/celler.css"]
+additional-js = ["theme/celler.js"]
 git-repository-url = "https://github.com/celler-cache/celler"
 edit-url-template = "https://github.com/celler-cache/celler/edit/main/book/{path}"
 default-theme = "rust"
-preferred-dark-theme = "ayu"
+preferred-dark-theme = "rust"
