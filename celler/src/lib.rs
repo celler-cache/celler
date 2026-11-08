@@ -30,4 +30,4 @@ pub mod signing;
 pub mod testing;
 pub mod util;
 
-pub use error::{AtticError, AtticResult};
+pub use error::{CellerError, CellerResult};

@@ -29,7 +29,7 @@ use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, DecodeError, 
 use displaydoc::Display;
 use ed25519_compact::{Error as SignatureError, KeyPair, PublicKey, Signature};
 
-use crate::{error::AtticResult, AtticError};
+use crate::{error::CellerResult, CellerError};
 
 #[cfg(test)]
 mod tests;
@@ -93,7 +93,7 @@ pub enum Error {
 }
 
 impl FromStr for NixKeypair {
-    type Err = AtticError;
+    type Err = CellerError;
 
     /// Imports an existing keypair from its canonical representation.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -110,7 +110,7 @@ impl FromStr for NixKeypair {
 
 impl NixKeypair {
     /// Generates a new keypair.
-    pub fn generate(name: &str) -> AtticResult<Self> {
+    pub fn generate(name: &str) -> CellerResult<Self> {
         // TODO: Make this configurable?
         let keypair = KeyPair::generate();
 
@@ -156,7 +156,7 @@ impl NixKeypair {
     }
 
     /// Verifies a message.
-    pub fn verify(&self, message: &[u8], signature: &str) -> AtticResult<()> {
+    pub fn verify(&self, message: &[u8], signature: &str) -> CellerResult<()> {
         let (_, bytes) = decode_string(signature, "signature", Signature::BYTES, Some(&self.name))?;
 
         let bytes: [u8; Signature::BYTES] = bytes.try_into().unwrap();
@@ -192,7 +192,7 @@ impl Serialize for NixKeypair {
 }
 
 impl FromStr for NixPublicKey {
-    type Err = AtticError;
+    type Err = CellerError;
 
     /// Imports an existing public key from its canonical representation.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -217,7 +217,7 @@ impl NixPublicKey {
     }
 
     /// Verifies a message.
-    pub fn verify(&self, message: &[u8], signature: &str) -> AtticResult<()> {
+    pub fn verify(&self, message: &[u8], signature: &str) -> CellerResult<()> {
         let (_, bytes) = decode_string(signature, "signature", Signature::BYTES, Some(&self.name))?;
 
         let bytes: [u8; Signature::BYTES] = bytes.try_into().unwrap();
@@ -232,7 +232,7 @@ impl NixPublicKey {
 /// Validates the name/label of a signing key.
 ///
 /// A valid name cannot be empty and must not contain colons (:).
-fn validate_name(name: &str) -> AtticResult<()> {
+fn validate_name(name: &str) -> CellerResult<()> {
     if name.is_empty() || name.find(':').is_some() {
         Err(Error::InvalidSigningKeyName(name.to_string()).into())
     } else {
@@ -246,7 +246,7 @@ fn decode_string<'s>(
     usage: &'static str,
     expected_payload_length: usize,
     expected_name: Option<&str>,
-) -> AtticResult<(&'s str, Vec<u8>)> {
+) -> CellerResult<(&'s str, Vec<u8>)> {
     let colon = s.find(':').ok_or(Error::NoColonSeparator)?;
 
     let (name, colon_and_payload) = s.split_at(colon);

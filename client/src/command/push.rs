@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
-use celler::AtticResult;
+use celler::CellerResult;
 use clap::Parser;
 use indicatif::MultiProgress;
 use tokio::io::{self, AsyncBufReadExt, BufReader};
@@ -73,7 +73,7 @@ impl PushContext {
         let paths = stream::iter(paths)
             .map(|p| self.store.follow_store_path(p))
             .then(
-                async |p: AtticResult<StorePath>| -> AtticResult<Option<_>> {
+                async |p: CellerResult<StorePath>| -> CellerResult<Option<_>> {
                     match p {
                         Ok(store_path) => {
                             Ok(if self.store.is_valid_path(store_path.clone()).await? {

@@ -1,8 +1,8 @@
 //! HTTP middlewares for access control.
 
+use axum::{extract::Request, middleware::Next, response::Response};
 use celler::cache::CacheName;
 use celler_token::util::parse_authorization_header;
-use axum::{extract::Request, middleware::Next, response::Response};
 use sea_orm::DatabaseConnection;
 use tokio::sync::OnceCell;
 

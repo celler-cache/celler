@@ -5,7 +5,7 @@ use std::str::FromStr as _;
 use sea_orm::entity::prelude::*;
 
 use super::Json;
-use celler::error::AtticResult;
+use celler::error::CellerResult;
 use celler::signing::NixKeypair;
 
 pub type CacheModel = Model;
@@ -60,7 +60,7 @@ pub enum Relation {
 }
 
 impl Model {
-    pub fn keypair(&self) -> AtticResult<NixKeypair> {
+    pub fn keypair(&self) -> CellerResult<NixKeypair> {
         NixKeypair::from_str(&self.keypair)
     }
 }

@@ -36,7 +36,7 @@ use crate::api::ApiClient;
 use celler::api::v1::cache_config::CacheConfig;
 use celler::api::v1::upload_path::{UploadPathNarInfo, UploadPathResult, UploadPathResultKind};
 use celler::cache::CacheName;
-use celler::error::AtticResult;
+use celler::error::CellerResult;
 use celler::nix_store::{NixStore, StorePath, StorePathHash, ValidPathInfo};
 use tracing::error;
 
@@ -640,14 +640,14 @@ pub async fn upload_path(
     }
 }
 
-impl<S: Stream<Item = AtticResult<Bytes>>> NarStreamProgress<S> {
+impl<S: Stream<Item = CellerResult<Bytes>>> NarStreamProgress<S> {
     fn new(stream: S, bar: ProgressBar) -> Self {
         Self { stream, bar }
     }
 }
 
-impl<S: Stream<Item = AtticResult<Bytes>> + Unpin> Stream for NarStreamProgress<S> {
-    type Item = AtticResult<Bytes>;
+impl<S: Stream<Item = CellerResult<Bytes>> + Unpin> Stream for NarStreamProgress<S> {
+    type Item = CellerResult<Bytes>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match Pin::new(&mut self.stream).as_mut().poll_next(cx) {
