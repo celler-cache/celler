@@ -69,7 +69,12 @@ async fn gen_completions(shell: Option<String>) -> Result<()> {
         .parse()
         .unwrap();
 
-    clap_complete::generate(shell, &mut Opts::command(), "attic", &mut std::io::stdout());
+    clap_complete::generate(
+        shell,
+        &mut Opts::command(),
+        "celler",
+        &mut std::io::stdout(),
+    );
 
     Ok(())
 }
