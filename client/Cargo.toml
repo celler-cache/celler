@@ -1,5 +1,5 @@
 [package]
-name = "attic-client"
+name = "celler-client"
 version.workspace = true
 edition.workspace = true
 publish = false
