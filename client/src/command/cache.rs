@@ -11,7 +11,7 @@ use celler::api::v1::cache_config::{
     CacheConfig, CreateCacheRequest, KeypairConfig, RetentionPeriodConfig,
 };
 
-/// Manage caches on an Attic server.
+/// Manage caches on a Celler server.
 #[derive(Debug, Parser)]
 pub struct Cache {
     #[clap(subcommand)]

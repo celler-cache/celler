@@ -14,7 +14,7 @@ use celler_token::{HS256Key, RS256KeyPair, SignatureType, Token};
 /// to any cache starting with `dev-` and read-only access to `prod`,
 /// expiring in 2 years:
 ///
-/// $ atticadm make-token --sub "alice" --validity "2y" --pull "dev-*" --push "dev-*" --pull "prod"
+/// $ celler admin make-token --signing-key key.pem --sub "alice" --validity "2y" --pull "dev-*" --push "dev-*" --pull "prod"
 #[derive(Debug, Parser)]
 pub struct MakeToken {
     /// The signing key to use for the token.
