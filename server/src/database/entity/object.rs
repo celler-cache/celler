@@ -13,7 +13,7 @@ use super::nar::NarModel;
 use super::Json;
 use crate::error::{ServerError, ServerResult};
 use crate::narinfo::{Compression, NarInfo};
-use attic::hash::Hash;
+use celler::hash::Hash;
 
 pub type ObjectModel = Model;
 

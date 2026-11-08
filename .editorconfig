@@ -20,7 +20,7 @@ indent_size = 4
 indent_style = space
 indent_size = 2
 
-[attic/src/nix_store/tests/nar/**]
+[celler/src/nix_store/tests/nar/**]
 charset = unset
 end_of_line = unset
 insert_final_newline = unset

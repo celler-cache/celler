@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::Parser;
 
 use crate::cli::Opts;
-use attic::nix_store::NixStore;
+use celler::nix_store::NixStore;
 
 /// Returns the closure of a store path (test).
 ///

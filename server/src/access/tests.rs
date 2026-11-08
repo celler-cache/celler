@@ -1,6 +1,6 @@
 use super::*;
 
-use attic::cache::CacheName;
+use celler::cache::CacheName;
 
 macro_rules! cache {
     ($n:expr) => {

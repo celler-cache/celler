@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
-use attic::AtticResult;
+use celler::AtticResult;
 use clap::Parser;
 use indicatif::MultiProgress;
 use tokio::io::{self, AsyncBufReadExt, BufReader};
@@ -14,7 +14,7 @@ use crate::cache::{CacheName, CacheRef, ServerName};
 use crate::cli::Opts;
 use crate::config::Config;
 use crate::push::{PushConfig, PushSessionConfig, Pusher};
-use attic::nix_store::{NixStore, StorePath};
+use celler::nix_store::{NixStore, StorePath};
 
 /// Push closures to a binary cache.
 #[derive(Debug, Parser)]

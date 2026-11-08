@@ -9,7 +9,7 @@ name = "celler"
 path = "src/main.rs"
 
 [dependencies]
-attic = { workspace = true, default-features = true }
+celler = { workspace = true, default-features = true }
 attic-token = { workspace = true }
 
 anyhow.workspace = true

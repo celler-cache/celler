@@ -2,7 +2,7 @@
 resolver = "2"
 
 members = [
-	"attic",
+	"celler",
 	"client",
 	"server",
 	"token",
@@ -13,7 +13,7 @@ version = "0.1.0"
 edition = "2021"
 
 [workspace.dependencies]
-attic = { path = "attic", default-features = false }
+celler = { path = "celler", default-features = false }
 attic-token = { path = "token" }
 
 anyhow = "1.0.98"

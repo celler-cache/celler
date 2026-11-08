@@ -11,7 +11,7 @@ use displaydoc::Display;
 use serde::Serialize;
 use tracing_error::SpanTrace;
 
-use attic::error::AtticError;
+use celler::error::AtticError;
 
 pub type ServerResult<T> = Result<T, ServerError>;
 

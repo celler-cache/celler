@@ -98,7 +98,7 @@ pub use jwt_simple::{
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, BoolFromInt};
 
-use attic::cache::{CacheName, CacheNamePattern};
+use celler::cache::{CacheName, CacheNamePattern};
 
 /// Custom claim namespace for the AtticAccess information.
 ///

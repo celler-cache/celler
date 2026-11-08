@@ -1,6 +1,6 @@
 //! HTTP middlewares for access control.
 
-use attic::cache::CacheName;
+use celler::cache::CacheName;
 use attic_token::util::parse_authorization_header;
 use axum::{extract::Request, middleware::Next, response::Response};
 use sea_orm::DatabaseConnection;

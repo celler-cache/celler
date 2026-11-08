@@ -7,7 +7,7 @@ use crate::api::ApiClient;
 use crate::cache::CacheRef;
 use crate::cli::Opts;
 use crate::config::Config;
-use attic::api::v1::cache_config::{
+use celler::api::v1::cache_config::{
     CacheConfig, CreateCacheRequest, KeypairConfig, RetentionPeriodConfig,
 };
 

@@ -45,7 +45,7 @@ use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::trace::TraceLayer;
 
 use access::http::{apply_auth, AuthState};
-use attic::cache::CacheName;
+use celler::cache::CacheName;
 use config::{Config, StorageConfig};
 use database::migration::{Migrator, MigratorTrait};
 use error::{ErrorKind, ServerError, ServerResult};

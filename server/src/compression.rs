@@ -5,7 +5,7 @@ use sha2::{Digest, Sha256};
 use tokio::io::{AsyncBufRead, AsyncRead};
 use tokio::sync::OnceCell;
 
-use attic::io::HashReader;
+use celler::io::HashReader;
 
 pub type CompressorFn<C> = Box<dyn FnOnce(C) -> Box<dyn AsyncRead + Unpin + Send> + Send>;
 

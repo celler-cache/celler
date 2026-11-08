@@ -33,11 +33,11 @@ use tokio::task::{spawn, JoinHandle};
 use tokio::time;
 
 use crate::api::ApiClient;
-use attic::api::v1::cache_config::CacheConfig;
-use attic::api::v1::upload_path::{UploadPathNarInfo, UploadPathResult, UploadPathResultKind};
-use attic::cache::CacheName;
-use attic::error::AtticResult;
-use attic::nix_store::{NixStore, StorePath, StorePathHash, ValidPathInfo};
+use celler::api::v1::cache_config::CacheConfig;
+use celler::api::v1::upload_path::{UploadPathNarInfo, UploadPathResult, UploadPathResultKind};
+use celler::cache::CacheName;
+use celler::error::AtticResult;
+use celler::nix_store::{NixStore, StorePath, StorePathHash, ValidPathInfo};
 use tracing::error;
 
 type JobSender = channel::Sender<ValidPathInfo>;

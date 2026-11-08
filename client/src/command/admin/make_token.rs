@@ -5,7 +5,7 @@ use chrono::{Duration as ChronoDuration, Utc};
 use clap::Parser;
 use humantime::Duration;
 
-use attic::cache::CacheNamePattern;
+use celler::cache::CacheNamePattern;
 use attic_token::{HS256Key, RS256KeyPair, SignatureType, Token};
 
 /// Generate a new token.

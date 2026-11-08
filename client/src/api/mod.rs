@@ -17,13 +17,13 @@ use serde::Deserialize;
 
 use crate::config::ServerConfig;
 use crate::version::CELLER_DISTRIBUTOR;
-use attic::api::v1::cache_config::{CacheConfig, CreateCacheRequest};
-use attic::api::v1::get_missing_paths::{GetMissingPathsRequest, GetMissingPathsResponse};
-use attic::api::v1::upload_path::{
+use celler::api::v1::cache_config::{CacheConfig, CreateCacheRequest};
+use celler::api::v1::get_missing_paths::{GetMissingPathsRequest, GetMissingPathsResponse};
+use celler::api::v1::upload_path::{
     UploadPathNarInfo, UploadPathResult, CELLER_NAR_INFO, CELLER_NAR_INFO_PREAMBLE_SIZE,
 };
-use attic::cache::CacheName;
-use attic::nix_store::StorePathHash;
+use celler::cache::CacheName;
+use celler::nix_store::StorePathHash;
 
 /// The User-Agent string of Celler.
 const CELLER_USER_AGENT: &str =

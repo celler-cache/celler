@@ -12,11 +12,11 @@ use crate::database::entity::cache::{self, Entity as Cache};
 use crate::database::entity::Json as DbJson;
 use crate::error::{ErrorKind, ServerError, ServerResult};
 use crate::{RequestState, State};
-use attic::api::v1::cache_config::{
+use celler::api::v1::cache_config::{
     CacheConfig, CreateCacheRequest, KeypairConfig, RetentionPeriodConfig,
 };
-use attic::cache::CacheName;
-use attic::signing::NixKeypair;
+use celler::cache::CacheName;
+use celler::signing::NixKeypair;
 
 #[instrument(skip_all, fields(cache_name))]
 pub(crate) async fn get_cache_config(

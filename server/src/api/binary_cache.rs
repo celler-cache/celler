@@ -31,10 +31,10 @@ use crate::narinfo::NarInfo;
 use crate::nix_manifest;
 use crate::storage::{Download, StorageBackend};
 use crate::{RequestState, State};
-use attic::cache::CacheName;
-use attic::io::merge_chunks;
-use attic::mime;
-use attic::nix_store::StorePathHash;
+use celler::cache::CacheName;
+use celler::io::merge_chunks;
+use celler::mime;
+use celler::nix_store::StorePathHash;
 
 /// Nix cache information.
 ///

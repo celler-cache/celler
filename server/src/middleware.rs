@@ -11,7 +11,7 @@ use axum::{
 
 use super::{AuthState, RequestState, RequestStateInner, State};
 use crate::error::{ErrorKind, ServerResult};
-use attic::api::binary_cache::CELLER_CACHE_VISIBILITY;
+use celler::api::binary_cache::CELLER_CACHE_VISIBILITY;
 
 fn extract_host(req: &Request) -> Option<String> {
     req.headers()

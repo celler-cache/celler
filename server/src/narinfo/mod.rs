@@ -50,9 +50,9 @@ use serde_with::serde_as;
 
 use crate::error::{ErrorKind, ServerError, ServerResult};
 use crate::nix_manifest::{self, SpaceDelimitedList};
-use attic::hash::Hash;
-use attic::mime;
-use attic::signing::NixKeypair;
+use celler::hash::Hash;
+use celler::mime;
+use celler::signing::NixKeypair;
 
 #[cfg(test)]
 mod tests;

@@ -15,9 +15,9 @@ use tokio::task;
 
 use crate::error::{ErrorKind, ServerError, ServerResult};
 use crate::narinfo::Compression;
-use attic::cache::CacheName;
-use attic::hash::Hash;
-use attic::nix_store::StorePathHash;
+use celler::cache::CacheName;
+use celler::hash::Hash;
+use celler::nix_store::StorePathHash;
 use entity::cache::{self, CacheModel, Entity as Cache};
 use entity::chunk::{self, ChunkModel, ChunkState, Entity as Chunk};
 use entity::chunkref;

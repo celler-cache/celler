@@ -443,43 +443,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
-name = "attic"
-version = "0.1.0"
-dependencies = [
- "async-stream",
- "base64 0.23.1",
- "bytes",
- "criterion",
- "digest 0.11.3",
- "displaydoc",
- "ed25519-compact",
- "fastcdc",
- "futures",
- "hex",
- "lazy_static",
- "nix-base32",
- "nix-daemon",
- "pin-project",
- "regex",
- "serde",
- "serde_json",
- "serde_with",
- "sha2 0.11.1",
- "tempfile",
- "tokio",
- "tokio-util",
- "wildmatch",
-]
-
-[[package]]
 name = "attic-client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-channel",
- "attic",
  "attic-token",
  "bytes",
+ "celler",
  "chrono",
  "clap",
  "clap_complete",
@@ -512,11 +483,11 @@ dependencies = [
  "async-compression",
  "async-stream",
  "async-trait",
- "attic",
  "attic-token",
  "axum",
  "axum-macros",
  "bytes",
+ "celler",
  "chrono",
  "clap",
  "console-subscriber",
@@ -556,8 +527,8 @@ dependencies = [
 name = "attic-token"
 version = "0.1.0"
 dependencies = [
- "attic",
  "base64 0.23.1",
+ "celler",
  "chrono",
  "displaydoc",
  "indexmap 2.14.2",
@@ -836,6 +807,35 @@ dependencies = [
  "jobserver",
  "libc",
  "shlex",
+]
+
+[[package]]
+name = "celler"
+version = "0.1.0"
+dependencies = [
+ "async-stream",
+ "base64 0.23.1",
+ "bytes",
+ "criterion",
+ "digest 0.11.3",
+ "displaydoc",
+ "ed25519-compact",
+ "fastcdc",
+ "futures",
+ "hex",
+ "lazy_static",
+ "nix-base32",
+ "nix-daemon",
+ "pin-project",
+ "regex",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "sha2 0.11.1",
+ "tempfile",
+ "tokio",
+ "tokio-util",
+ "wildmatch",
 ]
 
 [[package]]
