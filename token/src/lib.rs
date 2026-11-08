@@ -100,16 +100,6 @@ use serde_with::{serde_as, BoolFromInt};
 
 use celler::cache::{CacheName, CacheNamePattern};
 
-/// Custom claim namespace for the AtticAccess information.
-///
-/// Custom claim namespaces are required by platforms like Auth0, and
-/// custom claims without one will be silently dropped.
-///
-/// <https://auth0.com/docs/security/tokens/json-web-tokens/create-namespaced-custom-claims>
-///
-/// Also change the `#[serde(rename)]` below if you change this.
-pub const CLAIM_NAMESPACE: &str = "https://jwt.attic.rs/v1";
-
 macro_rules! require_permission_function {
     ($name:ident, $descr:literal, $member:ident) => {
         pub fn $name(&self) -> Result<()> {
@@ -134,7 +124,10 @@ pub struct Token(JWTClaims<TokenClaims>);
 /// Claims of a JSON Web Token.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct TokenClaims {
-    /// Attic namespace.
+    /// Celler namespace.
+    ///
+    /// This is inherited from Attic and renaming it will break existing tokens.
+    /// So we don't.
     #[serde(rename = "https://jwt.attic.rs/v1")]
     attic_ns: AtticAccess,
 }
@@ -143,7 +136,7 @@ struct TokenClaims {
 ///
 /// This is the content of the `attic-access` claim in JWTs.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AtticAccess {
+struct AtticAccess {
     /// Cache permissions.
     ///
     /// Keys here may include wildcards.
