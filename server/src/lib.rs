@@ -58,7 +58,7 @@ type RequestState = Arc<RequestStateInner>;
 /// Global server state.
 #[derive(Debug)]
 pub struct StateInner {
-    /// The Attic Server configuration.
+    /// The Celler server configuration.
     config: Config,
 
     /// Handle to the database.
@@ -168,7 +168,7 @@ impl StateInner {
 impl RequestStateInner {
     /// Returns the base API endpoint for clients.
     ///
-    /// The APIs encompass both the Attic API and the Nix binary
+    /// The APIs encompass both the Celler API and the Nix binary
     /// cache API.
     fn api_endpoint(&self) -> ServerResult<String> {
         if let Some(endpoint) = &self.api_endpoint {

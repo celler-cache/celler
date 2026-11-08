@@ -32,7 +32,7 @@ const CELLER_USER_AGENT: &str =
 /// The size threshold to send the upload info as part of the PUT body.
 const NAR_INFO_PREAMBLE_THRESHOLD: usize = 4 * 1024; // 4 KiB
 
-/// The Attic API client.
+/// The Celler API client.
 #[derive(Debug, Clone)]
 pub struct ApiClient {
     /// Base endpoint of the server.

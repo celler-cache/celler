@@ -95,7 +95,7 @@ impl Hash {
 
     /// Returns the hash in hexadecimal format, with the hash type prepended.
     ///
-    /// This is the canonical representation of hashes in the Attic database.
+    /// This is the canonical representation of hashes in the Celler database.
     pub fn to_typed_base16(&self) -> String {
         format!("{}:{}", self.hash_type(), hex::encode(self.data()))
     }

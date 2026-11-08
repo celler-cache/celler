@@ -1,4 +1,4 @@
-//! The Attic Library.
+//! The Celler library.
 
 #![deny(
     asm_sub_register,

@@ -1,10 +1,10 @@
 //! Access control.
 //!
-//! Access control in Attic is simple and stateless [0] - The server validates
+//! Access control in Celler is simple and stateless [0] - The server validates
 //! the JWT against the configured key and allows access based on the `https://jwt.attic.rs/v1`
 //! claim.
 //!
-//! One primary goal of the Attic Server is easy scalability. It's designed
+//! One primary goal of the Celler server is easy scalability. It's designed
 //! to be deployed to serverless platforms like fly.io and have fast
 //! cold-start times. Instances are created and destoyed rapidly in response
 //! to requests.
@@ -35,7 +35,7 @@
 //! To add the token to Nix, use the following format in `~/.config/nix/netrc`:
 //!
 //! ```text
-//! machine attic.server.tld password eyJhb...
+//! machine celler.server.tld password eyJhb...
 //! ```
 //!
 //! ## Example token

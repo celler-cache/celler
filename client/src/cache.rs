@@ -1,6 +1,6 @@
 //! Client-specific cache references.
 //!
-//! The Attic client is designed to work with multiple servers.
+//! The Celler client is designed to work with multiple servers.
 //! Therefore, users can refer to caches in the following forms:
 //!
 //! - `cachename`: Will use `cachename` on the default server

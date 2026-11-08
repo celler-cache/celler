@@ -92,7 +92,7 @@ pub struct Pusher {
 /// Many store paths can be built in a short period of time, with each
 /// having a big closure. It can be very inefficient if we were to compute
 /// closure and query for missing paths for each individual path. This is
-/// especially true if we have a lot of remote builders (e.g., `attic watch-store`
+/// especially true if we have a lot of remote builders (e.g., `celler watch-store`
 /// running alongside a beefy Hydra instance).
 ///
 /// `PushSession` batches operations in order to minimize the number of

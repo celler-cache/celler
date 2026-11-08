@@ -20,7 +20,7 @@ use crate::storage::{LocalStorageConfig, S3StorageConfig};
 /// This will be concatenated into `$XDG_CONFIG_HOME/celler`.
 const XDG_PREFIX: &str = "celler";
 
-/// Configuration for the Attic Server.
+/// Configuration for the Celler server.
 #[derive(Clone, Deserialize, derive_more::Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
@@ -44,8 +44,8 @@ pub struct Config {
     /// API endpoint is synthesized from the client's `Host` header which may
     /// be insecure.
     ///
-    /// The API endpoint _must_ end with a slash (e.g., `https://domain.tld/attic/`
-    /// not `https://domain.tld/attic`).
+    /// The API endpoint _must_ end with a slash (e.g., `https://domain.tld/celler/`
+    /// not `https://domain.tld/celler`).
     #[serde(rename = "api-endpoint")]
     pub api_endpoint: Option<String>,
 
@@ -231,7 +231,7 @@ pub struct CompressionConfig {
 
     /// Compression level.
     ///
-    /// If unspecified, Attic will choose a default one.
+    /// If unspecified, Celler will choose a default one.
     pub level: Option<i32>,
 }
 
