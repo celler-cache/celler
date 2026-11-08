@@ -7,7 +7,7 @@ use sea_orm::DatabaseConnection;
 use tokio::sync::OnceCell;
 
 use crate::access::{CachePermission, Token};
-use crate::database::{entity::cache::CacheModel, AtticDatabase};
+use crate::database::{entity::cache::CacheModel, CellerDatabase};
 use crate::error::ServerResult;
 use crate::{RequestState, State};
 

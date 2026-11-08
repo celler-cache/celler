@@ -25,7 +25,7 @@ use tokio_util::io::ReaderStream;
 use tracing::instrument;
 
 use crate::database::entity::chunk::ChunkModel;
-use crate::database::AtticDatabase;
+use crate::database::CellerDatabase;
 use crate::error::{ErrorKind, ServerResult};
 use crate::narinfo::NarInfo;
 use crate::nix_manifest;
