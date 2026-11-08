@@ -26,14 +26,14 @@ as time permits.
 - Integration into Single-Sign On via OpenID Connect.
 - Store path pinning.
 
-## Licensing
-
-Celler is available under the **Apache License, Version 2.0**.
-See `LICENSE` for details.
-
-By contributing to the project, you agree to license your work under the
-aforementioned license.
-
 ## Contact
 
 Chat with us on Matrix: [#celler:chat.x86.lol](https://matrix.to/#/%23celler:chat.x86.lol)
+
+## Licensing
+
+Celler's source code is licensed under the Apache License 2.0. Celler binaries
+are distributed under the EUPL-1.2. See `NOTICE` for details.
+
+By contributing to the project, you agree to license your work under the Apache
+License, Version 2.0.
