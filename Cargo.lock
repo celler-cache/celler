@@ -443,23 +443,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
-name = "attic-token"
-version = "0.1.0"
-dependencies = [
- "base64 0.23.1",
- "celler",
- "chrono",
- "displaydoc",
- "indexmap 2.14.2",
- "jwt-simple",
- "lazy_static",
- "regex",
- "serde",
- "serde_with",
- "tracing",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -763,9 +746,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-channel",
- "attic-token",
  "bytes",
  "celler",
+ "celler-token",
  "chrono",
  "clap",
  "clap_complete",
@@ -798,11 +781,11 @@ dependencies = [
  "async-compression",
  "async-stream",
  "async-trait",
- "attic-token",
  "axum",
  "axum-macros",
  "bytes",
  "celler",
+ "celler-token",
  "chrono",
  "clap",
  "console-subscriber",
@@ -836,6 +819,23 @@ dependencies = [
  "uuid",
  "whoami",
  "xdg",
+]
+
+[[package]]
+name = "celler-token"
+version = "0.1.0"
+dependencies = [
+ "base64 0.23.1",
+ "celler",
+ "chrono",
+ "displaydoc",
+ "indexmap 2.14.2",
+ "jwt-simple",
+ "lazy_static",
+ "regex",
+ "serde",
+ "serde_with",
+ "tracing",
 ]
 
 [[package]]

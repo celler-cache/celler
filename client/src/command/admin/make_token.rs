@@ -6,7 +6,7 @@ use clap::Parser;
 use humantime::Duration;
 
 use celler::cache::CacheNamePattern;
-use attic_token::{HS256Key, RS256KeyPair, SignatureType, Token};
+use celler_token::{HS256Key, RS256KeyPair, SignatureType, Token};
 
 /// Generate a new token.
 ///

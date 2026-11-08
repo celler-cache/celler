@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use anyhow::{bail, Result};
 use async_compression::Level as CompressionLevel;
-use attic_token::SignatureType;
+use celler_token::SignatureType;
 use serde::{de, Deserialize};
 use xdg::BaseDirectories;
 

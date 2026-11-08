@@ -1,5 +1,5 @@
 [package]
-name = "attic-token"
+name = "celler-token"
 version.workspace = true
 edition.workspace = true
 

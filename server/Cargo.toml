@@ -15,7 +15,7 @@ doc = false
 
 [dependencies]
 celler = { workspace = true, default-features = false, features = ["chunking", "io"] }
-attic-token.workspace = true
+celler-token.workspace = true
 
 anyhow.workspace = true
 async-stream.workspace = true
