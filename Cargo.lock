@@ -443,54 +443,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
-name = "attic-server"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-compression",
- "async-stream",
- "async-trait",
- "attic-token",
- "axum",
- "axum-macros",
- "bytes",
- "celler",
- "chrono",
- "clap",
- "console-subscriber",
- "derive_more",
- "digest 0.11.3",
- "displaydoc",
- "enum-as-inner",
- "futures",
- "hex",
- "http-body-util",
- "humantime",
- "humantime-serde",
- "itoa",
- "object_store",
- "rand 0.10.3",
- "regex",
- "ryu",
- "sea-orm",
- "sea-orm-migration",
- "serde",
- "serde_json",
- "serde_with",
- "sha2 0.11.1",
- "tokio",
- "tokio-util",
- "toml",
- "tower-http 0.7.1",
- "tracing",
- "tracing-error",
- "tracing-subscriber",
- "uuid",
- "whoami",
- "xdg",
-]
-
-[[package]]
 name = "attic-token"
 version = "0.1.0"
 dependencies = [
@@ -835,6 +787,54 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+ "xdg",
+]
+
+[[package]]
+name = "celler-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-compression",
+ "async-stream",
+ "async-trait",
+ "attic-token",
+ "axum",
+ "axum-macros",
+ "bytes",
+ "celler",
+ "chrono",
+ "clap",
+ "console-subscriber",
+ "derive_more",
+ "digest 0.11.3",
+ "displaydoc",
+ "enum-as-inner",
+ "futures",
+ "hex",
+ "http-body-util",
+ "humantime",
+ "humantime-serde",
+ "itoa",
+ "object_store",
+ "rand 0.10.3",
+ "regex",
+ "ryu",
+ "sea-orm",
+ "sea-orm-migration",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "sha2 0.11.1",
+ "tokio",
+ "tokio-util",
+ "toml",
+ "tower-http 0.7.1",
+ "tracing",
+ "tracing-error",
+ "tracing-subscriber",
+ "uuid",
+ "whoami",
  "xdg",
 ]
 
