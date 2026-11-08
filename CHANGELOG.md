@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Configuration via environment variables: `ATTIC_SERVER_*`, `CELLER_SERVER_*`.
+- The `/{cache}/attic-cache-info` API endpoint. Use `GET /_api/v1/cache-config/{cache}` instead, which returns the same data.
 - `cellerd` does not create an initial token or a template configuration anymore.
 - WASM build target.
 - Static package builds.
