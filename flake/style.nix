@@ -1,10 +1,10 @@
 # Flake-parts module for style checking.
-{ lib, flake-parts-lib, self, inputs, ... }: {
+{ inputs, ... }: {
   imports = [
     inputs.git-hooks.flakeModule
   ];
 
-  perSystem = { config, self', inputs', pkgs, ... }: {
+  perSystem = { ... }: {
     pre-commit = {
       settings.hooks = {
         nixpkgs-fmt.enable = true;
