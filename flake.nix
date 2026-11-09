@@ -1,5 +1,5 @@
 {
-  description = "A Nix binary cache server";
+  description = "Multi-tenant Nix binary cache";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";

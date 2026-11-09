@@ -58,8 +58,8 @@ let
     '';
 
     meta = with lib; {
-      description = "Multi-tenant Nix binary cache system";
-      homepage = "https://github.com/celler-cache/celler";
+      description = "Multi-tenant Nix binary cache";
+      homepage = "https://celler.x86.lol";
       license = licenses.eupl12;
       maintainers = with maintainers; [ blitz ];
       platforms = platforms.linux ++ platforms.darwin;
