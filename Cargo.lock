@@ -713,7 +713,7 @@ dependencies = [
 
 [[package]]
 name = "celler"
-version = "0.1.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "async-stream",
  "base64 0.23.1",
@@ -742,7 +742,7 @@ dependencies = [
 
 [[package]]
 name = "celler-client"
-version = "0.1.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -775,7 +775,7 @@ dependencies = [
 
 [[package]]
 name = "celler-server"
-version = "0.1.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "anyhow",
  "async-compression",
@@ -823,7 +823,7 @@ dependencies = [
 
 [[package]]
 name = "celler-token"
-version = "0.1.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "base64 0.23.1",
  "celler",

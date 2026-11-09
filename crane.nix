@@ -21,7 +21,7 @@ let
 
   commonArgs = {
     pname = "celler";
-    version = "0.1.0";
+    inherit (craneLib.crateNameFromCargoToml { cargoToml = ./Cargo.toml; }) version;
 
     src = lib.cleanSourceWith {
       filter = name: type: !(type == "directory" && builtins.elem (baseNameOf name) ignoredPaths);
