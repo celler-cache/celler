@@ -17,7 +17,7 @@ use regex::Regex;
 use serde::{de, Deserialize, Serialize};
 use wildmatch::WildMatch;
 
-use crate::error::{AtticError, AtticResult};
+use crate::error::{CellerError, CellerResult};
 
 /// The maximum allowable length of a cache name.
 pub const MAX_NAME_LENGTH: usize = 50;
@@ -76,7 +76,7 @@ impl std::fmt::Display for CacheName {
 
 impl CacheName {
     /// Creates a cache name from a String.
-    pub fn new(name: String) -> AtticResult<Self> {
+    pub fn new(name: String) -> CellerResult<Self> {
         validate_cache_name(&name, false)?;
         Ok(Self(name))
     }
@@ -108,16 +108,16 @@ impl CacheName {
 }
 
 impl FromStr for CacheName {
-    type Err = AtticError;
+    type Err = CellerError;
 
-    fn from_str(name: &str) -> AtticResult<Self> {
+    fn from_str(name: &str) -> CellerResult<Self> {
         Self::new(name.to_owned())
     }
 }
 
 impl CacheNamePattern {
     /// Creates a cache name pattern from a String.
-    pub fn new(pattern: String) -> AtticResult<Self> {
+    pub fn new(pattern: String) -> CellerResult<Self> {
         validate_cache_name(&pattern, true)?;
         let matcher = WildMatch::new(&pattern);
 
@@ -137,9 +137,9 @@ impl CacheNamePattern {
 }
 
 impl FromStr for CacheNamePattern {
-    type Err = AtticError;
+    type Err = CellerError;
 
-    fn from_str(pattern: &str) -> AtticResult<Self> {
+    fn from_str(pattern: &str) -> CellerResult<Self> {
         Self::new(pattern.to_owned())
     }
 }
@@ -179,7 +179,7 @@ impl PartialEq for CacheNamePattern {
 
 impl Eq for CacheNamePattern {}
 
-fn validate_cache_name(name: &str, allow_wildcards: bool) -> AtticResult<()> {
+fn validate_cache_name(name: &str, allow_wildcards: bool) -> CellerResult<()> {
     let valid = if allow_wildcards {
         CACHE_NAME_PATTERN_REGEX.is_match(name)
     } else {
@@ -189,7 +189,7 @@ fn validate_cache_name(name: &str, allow_wildcards: bool) -> AtticResult<()> {
     if valid {
         Ok(())
     } else {
-        Err(AtticError::InvalidCacheName {
+        Err(CellerError::InvalidCacheName {
             name: name.to_owned(),
         })
     }

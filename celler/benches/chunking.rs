@@ -4,8 +4,8 @@ use std::io::Cursor;
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use futures::StreamExt;
 
-use attic::chunking::chunk_stream;
-use attic::testing::{get_fake_data, get_runtime};
+use celler::chunking::chunk_stream;
+use celler::testing::{get_fake_data, get_runtime};
 
 struct Parameters {
     min_size: u32,

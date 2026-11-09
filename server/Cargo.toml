@@ -1,11 +1,11 @@
 [package]
-name = "attic-server"
+name = "celler-server"
 version.workspace = true
 edition.workspace = true
 publish = false
 
 [lib]
-name = "attic_server"
+name = "celler_server"
 path = "src/lib.rs"
 
 [[bin]]
@@ -14,8 +14,8 @@ path = "src/main.rs"
 doc = false
 
 [dependencies]
-attic = { workspace = true, default-features = false, features = ["chunking", "io"] }
-attic-token.workspace = true
+celler = { workspace = true, default-features = false, features = ["chunking", "io"] }
+celler-token.workspace = true
 
 anyhow.workspace = true
 async-stream.workspace = true

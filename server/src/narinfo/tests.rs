@@ -2,7 +2,7 @@ use super::*;
 
 use std::path::Path;
 
-use attic::signing::NixPublicKey;
+use celler::signing::NixPublicKey;
 
 #[test]
 fn test_basic() {

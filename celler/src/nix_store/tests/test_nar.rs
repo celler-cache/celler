@@ -13,7 +13,7 @@ use tokio::fs::{File, OpenOptions};
 use tokio::io::{AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::process::Command;
 
-use crate::error::AtticResult;
+use crate::error::CellerResult;
 use crate::nix_store::StorePath;
 
 /// Expected values for `nm1w9sdm6j6icmhd2q3260hl1w9zj6li-attic-test-no-deps`.
@@ -149,7 +149,7 @@ impl TestNar {
                 let bp = PathBuf::from(bp);
                 StorePath::from_base_name(bp)
             })
-            .collect::<AtticResult<HashSet<StorePath>>>()
+            .collect::<CellerResult<HashSet<StorePath>>>()
             .unwrap()
     }
 

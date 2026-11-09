@@ -10,7 +10,7 @@ use tracing_error::ErrorLayer;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
 
-use attic_server::config;
+use celler_server::config;
 
 /// Nix binary cache server.
 #[derive(Debug, Parser)]
@@ -73,26 +73,26 @@ async fn main() -> Result<()> {
 
     match opts.mode {
         ServerMode::Monolithic => {
-            attic_server::run_migrations(config.clone()).await?;
+            celler_server::run_migrations(config.clone()).await?;
 
             let (api_server, _) = join!(
-                attic_server::run_api_server(opts.listen, config.clone()),
-                attic_server::gc::run_garbage_collection(config.clone()),
+                celler_server::run_api_server(opts.listen, config.clone()),
+                celler_server::gc::run_garbage_collection(config.clone()),
             );
 
             api_server?;
         }
         ServerMode::ApiServer => {
-            attic_server::run_api_server(opts.listen, config).await?;
+            celler_server::run_api_server(opts.listen, config).await?;
         }
         ServerMode::GarbageCollector => {
-            attic_server::gc::run_garbage_collection(config.clone()).await;
+            celler_server::gc::run_garbage_collection(config.clone()).await;
         }
         ServerMode::DbMigrations => {
-            attic_server::run_migrations(config).await?;
+            celler_server::run_migrations(config).await?;
         }
         ServerMode::GarbageCollectorOnce => {
-            attic_server::gc::run_garbage_collection_once(config).await?;
+            celler_server::gc::run_garbage_collection_once(config).await?;
         }
         ServerMode::CheckConfig => {
             // config is valid, let's just exit :)

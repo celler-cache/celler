@@ -13,7 +13,7 @@ use crate::cache::CacheRef;
 use crate::cli::Opts;
 use crate::config::Config;
 use crate::push::{PushConfig, PushSessionConfig, Pusher};
-use attic::nix_store::{NixStore, StorePath};
+use celler::nix_store::{NixStore, StorePath};
 
 /// Watch the Nix Store for new paths and upload them to a binary cache.
 #[derive(Debug, Parser)]

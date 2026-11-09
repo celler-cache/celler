@@ -10,8 +10,8 @@ use crate::database::entity::nar;
 use crate::database::entity::object::{self, Entity as Object};
 use crate::error::{ServerError, ServerResult};
 use crate::{RequestState, State};
-use attic::api::v1::get_missing_paths::{GetMissingPathsRequest, GetMissingPathsResponse};
-use attic::nix_store::StorePathHash;
+use celler::api::v1::get_missing_paths::{GetMissingPathsRequest, GetMissingPathsResponse};
+use celler::nix_store::StorePathHash;
 
 #[derive(FromQueryResult)]
 struct StorePathHashOnly {

@@ -103,7 +103,7 @@ pub enum Error {
 /// ```
 /// use serde::Deserialize;
 /// use serde_with::serde_as;
-/// # use attic_server::nix_manifest::{self, SpaceDelimitedList};
+/// # use celler_server::nix_manifest::{self, SpaceDelimitedList};
 ///
 /// #[serde_as]
 /// #[derive(Debug, Deserialize)]

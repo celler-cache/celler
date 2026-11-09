@@ -5,7 +5,7 @@ use crate::cache::ServerName;
 use crate::cli::Opts;
 use crate::config::{Config, ServerConfig, ServerTokenConfig};
 
-/// Log into an Attic server.
+/// Log into a Celler server.
 #[derive(Debug, Parser)]
 pub struct Login {
     /// Name of the server.

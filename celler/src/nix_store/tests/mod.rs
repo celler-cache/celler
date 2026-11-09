@@ -48,7 +48,7 @@ fn assert_base_name(store: &str, path: &str, expected: &str) {
 fn assert_base_name_err(store: &str, path: &str, err: &str) {
     let e = to_base_name(store.as_ref(), path.as_ref()).unwrap_err();
 
-    if let AtticError::InvalidStorePath { path: _, reason } = e {
+    if let CellerError::InvalidStorePath { path: _, reason } = e {
         assert!(reason.contains(err));
     } else {
         panic!("to_base_name didn't return an InvalidStorePath");

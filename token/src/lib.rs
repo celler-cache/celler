@@ -1,10 +1,10 @@
 //! Access control.
 //!
-//! Access control in Attic is simple and stateless [0] - The server validates
+//! Access control in Celler is simple and stateless [0] - The server validates
 //! the JWT against the configured key and allows access based on the `https://jwt.attic.rs/v1`
 //! claim.
 //!
-//! One primary goal of the Attic Server is easy scalability. It's designed
+//! One primary goal of the Celler server is easy scalability. It's designed
 //! to be deployed to serverless platforms like fly.io and have fast
 //! cold-start times. Instances are created and destoyed rapidly in response
 //! to requests.
@@ -35,7 +35,7 @@
 //! To add the token to Nix, use the following format in `~/.config/nix/netrc`:
 //!
 //! ```text
-//! machine attic.server.tld password eyJhb...
+//! machine celler.server.tld password eyJhb...
 //! ```
 //!
 //! ## Example token
@@ -98,17 +98,7 @@ pub use jwt_simple::{
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, BoolFromInt};
 
-use attic::cache::{CacheName, CacheNamePattern};
-
-/// Custom claim namespace for the AtticAccess information.
-///
-/// Custom claim namespaces are required by platforms like Auth0, and
-/// custom claims without one will be silently dropped.
-///
-/// <https://auth0.com/docs/security/tokens/json-web-tokens/create-namespaced-custom-claims>
-///
-/// Also change the `#[serde(rename)]` below if you change this.
-pub const CLAIM_NAMESPACE: &str = "https://jwt.attic.rs/v1";
+use celler::cache::{CacheName, CacheNamePattern};
 
 macro_rules! require_permission_function {
     ($name:ident, $descr:literal, $member:ident) => {
@@ -134,7 +124,10 @@ pub struct Token(JWTClaims<TokenClaims>);
 /// Claims of a JSON Web Token.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct TokenClaims {
-    /// Attic namespace.
+    /// Celler namespace.
+    ///
+    /// This is inherited from Attic and renaming it will break existing tokens.
+    /// So we don't.
     #[serde(rename = "https://jwt.attic.rs/v1")]
     attic_ns: AtticAccess,
 }
@@ -143,7 +136,7 @@ struct TokenClaims {
 ///
 /// This is the content of the `attic-access` claim in JWTs.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct AtticAccess {
+struct AtticAccess {
     /// Cache permissions.
     ///
     /// Keys here may include wildcards.

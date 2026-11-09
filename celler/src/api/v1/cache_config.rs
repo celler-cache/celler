@@ -53,7 +53,7 @@ pub struct CacheConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub substituter_endpoint: Option<String>,
 
-    /// The Attic API endpoint.
+    /// The Celler API endpoint.
     ///
     /// This is read-only and may not be available.
     #[serde(skip_serializing_if = "Option::is_none")]

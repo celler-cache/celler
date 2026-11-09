@@ -6,11 +6,11 @@ use std::path::PathBuf;
 
 use displaydoc::Display;
 
-pub type AtticResult<T> = Result<T, AtticError>;
+pub type CellerResult<T> = Result<T, CellerError>;
 
 /// An error.
 #[derive(Debug, Display)]
-pub enum AtticError {
+pub enum CellerError {
     /// Failed to connect to the Nix store: {reason}
     StoreConnectError { reason: String },
 
@@ -42,7 +42,7 @@ pub enum AtticError {
     IoError { error: io::Error },
 }
 
-impl AtticError {
+impl CellerError {
     pub fn name(&self) -> &'static str {
         match self {
             Self::StoreConnectError { .. } => "StoreConnectError",
@@ -58,21 +58,21 @@ impl AtticError {
     }
 }
 
-impl StdError for AtticError {}
+impl StdError for CellerError {}
 
-impl From<io::Error> for AtticError {
+impl From<io::Error> for CellerError {
     fn from(error: io::Error) -> Self {
         Self::IoError { error }
     }
 }
 
-impl From<super::signing::Error> for AtticError {
+impl From<super::signing::Error> for CellerError {
     fn from(error: super::signing::Error) -> Self {
         Self::SigningError(error)
     }
 }
 
-impl From<super::hash::Error> for AtticError {
+impl From<super::hash::Error> for CellerError {
     fn from(error: super::hash::Error) -> Self {
         Self::HashError(error)
     }

@@ -7,7 +7,7 @@
 //! will become unavailable.
 //!
 //! Such scenario can be recovered from by reuploading any object
-//! that has the missing chunk. `atticadm` will have the functionality
+//! that has the missing chunk. `celler admin` will have the functionality
 //! to kill/delete a corrupted chunk from the database and to find
 //! objects with missing chunks so they can be repaired.
 

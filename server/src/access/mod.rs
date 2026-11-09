@@ -1,7 +1,7 @@
 //! Access control.
 //!
-//! See [attic_token] for more details.
+//! See [celler_token] for more details.
 
 pub mod http;
 
-pub use attic_token::*;
+pub use celler_token::*;

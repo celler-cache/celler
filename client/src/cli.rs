@@ -15,7 +15,7 @@ use crate::command::push::{self, Push};
 use crate::command::r#use::{self, Use};
 use crate::command::watch_store::{self, WatchStore};
 
-/// Attic binary cache client.
+/// Celler binary cache client.
 #[derive(Debug, Parser)]
 #[clap(version)]
 #[clap(propagate_version = true)]
@@ -69,7 +69,12 @@ async fn gen_completions(shell: Option<String>) -> Result<()> {
         .parse()
         .unwrap();
 
-    clap_complete::generate(shell, &mut Opts::command(), "attic", &mut std::io::stdout());
+    clap_complete::generate(
+        shell,
+        &mut Opts::command(),
+        "celler",
+        &mut std::io::stdout(),
+    );
 
     Ok(())
 }

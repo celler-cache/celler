@@ -1,13 +1,13 @@
 //! HTTP middlewares for access control.
 
-use attic::cache::CacheName;
-use attic_token::util::parse_authorization_header;
 use axum::{extract::Request, middleware::Next, response::Response};
+use celler::cache::CacheName;
+use celler_token::util::parse_authorization_header;
 use sea_orm::DatabaseConnection;
 use tokio::sync::OnceCell;
 
 use crate::access::{CachePermission, Token};
-use crate::database::{entity::cache::CacheModel, AtticDatabase};
+use crate::database::{entity::cache::CacheModel, CellerDatabase};
 use crate::error::ServerResult;
 use crate::{RequestState, State};
 

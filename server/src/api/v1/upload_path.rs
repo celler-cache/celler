@@ -33,14 +33,14 @@ use crate::config::{ChunkingConfig, CompressionType};
 use crate::error::{ErrorKind, ServerError, ServerResult};
 use crate::narinfo::Compression;
 use crate::{RequestState, State};
-use attic::api::v1::upload_path::{
+use celler::api::v1::upload_path::{
     UploadPathNarInfo, UploadPathResult, UploadPathResultKind, CELLER_NAR_INFO,
     CELLER_NAR_INFO_PREAMBLE_SIZE,
 };
-use attic::chunking::chunk_stream;
-use attic::hash::Hash;
-use attic::io::{read_chunk_async, HashReader};
-use attic::util::Finally;
+use celler::chunking::chunk_stream;
+use celler::hash::Hash;
+use celler::io::{read_chunk_async, HashReader};
+use celler::util::Finally;
 
 use crate::database::entity::cache;
 use crate::database::entity::chunk::{self, ChunkState, Entity as Chunk};
@@ -48,7 +48,7 @@ use crate::database::entity::chunkref::{self, Entity as ChunkRef};
 use crate::database::entity::nar::{self, Entity as Nar, NarState};
 use crate::database::entity::object::{self, Entity as Object, InsertExt};
 use crate::database::entity::Json as DbJson;
-use crate::database::{AtticDatabase, ChunkGuard, NarGuard};
+use crate::database::{CellerDatabase, ChunkGuard, NarGuard};
 
 /// Number of chunks to upload to the storage backend at once.
 ///

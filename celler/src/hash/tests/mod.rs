@@ -1,6 +1,6 @@
 use super::*;
 
-use crate::error::AtticError;
+use crate::error::CellerError;
 use crate::nix_store::tests::test_nar;
 
 const BLOB: &[u8] = include_bytes!("blob");
@@ -37,27 +37,29 @@ fn test_from_typed() {
 
     assert!(matches!(
         Hash::from_typed("sha256"),
-        Err(AtticError::HashError(Error::NoColonSeparator))
+        Err(CellerError::HashError(Error::NoColonSeparator))
     ));
 
     assert!(matches!(
         Hash::from_typed("sha256:"),
-        Err(AtticError::HashError(Error::InvalidHashStringLength { .. }))
+        Err(CellerError::HashError(
+            Error::InvalidHashStringLength { .. }
+        ))
     ));
 
     assert!(matches!(
         Hash::from_typed("sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"),
-        Err(AtticError::HashError(Error::InvalidBase32Hash))
+        Err(CellerError::HashError(Error::InvalidBase32Hash))
     ));
 
     assert!(matches!(
         Hash::from_typed("sha256:gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg"),
-        Err(AtticError::HashError(Error::InvalidBase16Hash(_)))
+        Err(CellerError::HashError(Error::InvalidBase16Hash(_)))
     ));
 
     assert!(matches!(
         Hash::from_typed("md5:invalid"),
-        Err(AtticError::HashError(Error::UnsupportedHashAlgorithm(alg))) if alg == "md5"
+        Err(CellerError::HashError(Error::UnsupportedHashAlgorithm(alg))) if alg == "md5"
     ));
 }
 

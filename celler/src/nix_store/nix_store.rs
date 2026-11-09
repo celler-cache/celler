@@ -13,9 +13,9 @@ use tokio::sync::Mutex;
 use tokio_util::io::ReaderStream;
 
 use super::{to_base_name, StorePath, ValidPathInfo};
-use crate::error::AtticResult;
+use crate::error::CellerResult;
 use crate::hash::Hash;
-use crate::AtticError;
+use crate::CellerError;
 
 /// High-level wrapper for the Unix Domain Socket Nix Store.
 pub struct NixStore {
@@ -27,18 +27,18 @@ pub struct NixStore {
 
 const DAEMON_SOCKET_PATH: &str = "/nix/var/nix/daemon-socket/socket";
 
-async fn daemon_connect() -> AtticResult<nix_daemon::nix::DaemonStore<UnixStream>> {
+async fn daemon_connect() -> CellerResult<nix_daemon::nix::DaemonStore<UnixStream>> {
     let daemon = nix_daemon::nix::DaemonStore::builder()
         .connect_unix(DAEMON_SOCKET_PATH)
         .await
-        .map_err(|e| AtticError::StoreConnectError {
+        .map_err(|e| CellerError::StoreConnectError {
             reason: e.to_string(),
         })?;
     Ok(daemon)
 }
 
 impl NixStore {
-    pub async fn connect() -> AtticResult<Self> {
+    pub async fn connect() -> CellerResult<Self> {
         Ok(Self {
             daemon: Arc::new(Mutex::new(daemon_connect().await?)),
             // TODO: Make this method async and call nix-instantiate --raw --eval -E 'builtins.storeDir'
@@ -55,7 +55,7 @@ impl NixStore {
     ///
     /// This is a simple wrapper over `parse_store_path` that also
     /// follows symlinks.
-    pub fn follow_store_path<P: AsRef<Path>>(&self, path: P) -> AtticResult<StorePath> {
+    pub fn follow_store_path<P: AsRef<Path>>(&self, path: P) -> CellerResult<StorePath> {
         // Some cases to consider:
         //
         // - `/nix/store/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee-nixos-system-x/sw` (a symlink to sw)
@@ -86,7 +86,7 @@ impl NixStore {
     ///
     /// The path must be under the store directory. See `follow_store_path`
     /// for an alternative that follows symlinks.
-    pub fn parse_store_path(&self, path: impl AsRef<Path>) -> AtticResult<StorePath> {
+    pub fn parse_store_path(&self, path: impl AsRef<Path>) -> CellerResult<StorePath> {
         let base_name = to_base_name(&self.store_dir, path.as_ref())?;
         StorePath::from_base_name(base_name)
     }
@@ -102,7 +102,7 @@ impl NixStore {
     pub fn nar_from_path(
         &self,
         store_path: impl AsRef<StorePath>,
-    ) -> impl Stream<Item = AtticResult<Bytes>> + Unpin + Send {
+    ) -> impl Stream<Item = CellerResult<Bytes>> + Unpin + Send {
         let full_store_path = self.get_full_path(store_path);
         let full_store_path_str = full_store_path
             .to_str()
@@ -123,7 +123,7 @@ impl NixStore {
                 .into_nar_from_path(full_store_path_str)
                 .result()
                 .await
-                .map_err(|e| AtticError::NarFromPathError {
+                .map_err(|e| CellerError::NarFromPathError {
                     reason: e.to_string(),
                 })
         };
@@ -133,7 +133,7 @@ impl NixStore {
                 .then(async |s| match s {
                     Ok(reader) => ReaderStream::new(reader)
                         .map(|i| {
-                            i.map_err(|e| AtticError::NarFromPathError {
+                            i.map_err(|e| CellerError::NarFromPathError {
                                 reason: e.to_string(),
                             })
                         })
@@ -152,7 +152,7 @@ impl NixStore {
         &self,
         store_path: StorePath,
         include_outputs: bool,
-    ) -> AtticResult<Vec<StorePath>> {
+    ) -> CellerResult<Vec<StorePath>> {
         self.compute_fs_closure_multi(vec![store_path], include_outputs)
             .await
     }
@@ -164,7 +164,7 @@ impl NixStore {
         &self,
         store_paths: Vec<StorePath>,
         include_outputs: bool,
-    ) -> AtticResult<Vec<StorePath>> {
+    ) -> CellerResult<Vec<StorePath>> {
         let mut unqueried_paths: Vec<StorePath> = store_paths;
         let mut result: BTreeSet<StorePath> = Default::default();
 
@@ -180,7 +180,7 @@ impl NixStore {
                 result.insert(unqueried_path.clone());
 
                 let path_info = self.query_path_info(&unqueried_path).await?.ok_or(
-                    AtticError::InvalidStorePath {
+                    CellerError::InvalidStorePath {
                         path: unqueried_path.base_name,
                         reason: "Missing reference",
                     },
@@ -197,7 +197,7 @@ impl NixStore {
     ///
     /// This returns true, iff `query_path_info` would also have given
     /// you a positive result.
-    pub async fn is_valid_path(&self, store_path: impl AsRef<StorePath>) -> AtticResult<bool> {
+    pub async fn is_valid_path(&self, store_path: impl AsRef<StorePath>) -> CellerResult<bool> {
         let mut daemon = self.daemon.lock().await;
 
         Ok(daemon
@@ -205,7 +205,7 @@ impl NixStore {
                 self.get_full_path(&store_path)
                     .as_os_str()
                     .to_str()
-                    .ok_or_else(|| AtticError::InvalidStorePath {
+                    .ok_or_else(|| CellerError::InvalidStorePath {
                         path: store_path.as_ref().base_name.clone(),
                         reason: "Invalid UTF-8",
                     })?,
@@ -226,13 +226,13 @@ impl NixStore {
     pub async fn query_path_info(
         &self,
         store_path: impl AsRef<StorePath>,
-    ) -> AtticResult<Option<ValidPathInfo>> {
+    ) -> CellerResult<Option<ValidPathInfo>> {
         let opt_path_info = {
             let full_store_path = self.get_full_path(&store_path);
             let full_store_path_str =
                 full_store_path
                     .to_str()
-                    .ok_or_else(|| AtticError::InvalidStorePath {
+                    .ok_or_else(|| CellerError::InvalidStorePath {
                         path: full_store_path.clone(),
                         reason: "Invalid UTF-8",
                     })?;
@@ -242,14 +242,14 @@ impl NixStore {
                 .query_pathinfo(full_store_path_str)
                 .result()
                 .await
-                .map_err(|_e| AtticError::InvalidStorePath {
+                .map_err(|_e| CellerError::InvalidStorePath {
                     path: full_store_path.clone(),
                     reason: "Failed to query",
                 })?
         };
 
         opt_path_info
-            .map(|path_info| -> AtticResult<_> {
+            .map(|path_info| -> CellerResult<_> {
                 Ok(ValidPathInfo {
                     path: store_path.as_ref().to_owned(),
                     // TODO The documentation of PathInfo lies that the string has a sha256- prefix.
@@ -258,8 +258,8 @@ impl NixStore {
                     references: path_info
                         .references
                         .into_iter()
-                        .map(|p| -> AtticResult<StorePath> { self.parse_store_path(p) })
-                        .collect::<AtticResult<Vec<_>>>()?,
+                        .map(|p| -> CellerResult<StorePath> { self.parse_store_path(p) })
+                        .collect::<CellerResult<Vec<_>>>()?,
                     sigs: path_info.signatures,
                     ca: path_info.ca,
                 })

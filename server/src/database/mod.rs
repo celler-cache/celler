@@ -15,9 +15,9 @@ use tokio::task;
 
 use crate::error::{ErrorKind, ServerError, ServerResult};
 use crate::narinfo::Compression;
-use attic::cache::CacheName;
-use attic::hash::Hash;
-use attic::nix_store::StorePathHash;
+use celler::cache::CacheName;
+use celler::hash::Hash;
+use celler::nix_store::StorePathHash;
 use entity::cache::{self, CacheModel, Entity as Cache};
 use entity::chunk::{self, ChunkModel, ChunkState, Entity as Chunk};
 use entity::chunkref;
@@ -32,7 +32,7 @@ const SELECT_CHUNK: &str = "CH_";
 const SELECT_CHUNKREF: &str = "CHR_";
 
 #[async_trait]
-pub trait AtticDatabase: Send + Sync {
+pub trait CellerDatabase: Send + Sync {
     /// Retrieves an object in a binary cache by its store path hash, returning all its
     /// chunks.
     async fn find_object_and_chunks_by_store_path_hash(
@@ -134,7 +134,7 @@ pub fn build_cache_object_nar_query(include_chunks: bool) -> Select<Object> {
 }
 
 #[async_trait]
-impl AtticDatabase for DatabaseConnection {
+impl CellerDatabase for DatabaseConnection {
     async fn find_object_and_chunks_by_store_path_hash(
         &self,
         cache: &CacheName,

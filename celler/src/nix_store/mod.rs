@@ -50,7 +50,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use serde::{de, Deserialize, Serialize};
 
-use crate::error::{AtticError, AtticResult};
+use crate::error::{CellerError, CellerResult};
 use crate::hash::Hash;
 
 pub use nix_store::NixStore;
@@ -146,18 +146,19 @@ pub struct ValidPathInfo {
 
 impl StorePath {
     /// Creates a StorePath with a base name.
-    fn from_base_name(base_name: impl AsRef<Path>) -> AtticResult<Self> {
+    fn from_base_name(base_name: impl AsRef<Path>) -> CellerResult<Self> {
         let base_name = base_name.as_ref().to_owned();
-        let s = base_name
-            .as_os_str()
-            .to_str()
-            .ok_or_else(|| AtticError::InvalidStorePathName {
-                base_name: base_name.to_owned(),
-                reason: "Name contains non-UTF-8 characters",
-            })?;
+        let s =
+            base_name
+                .as_os_str()
+                .to_str()
+                .ok_or_else(|| CellerError::InvalidStorePathName {
+                    base_name: base_name.to_owned(),
+                    reason: "Name contains non-UTF-8 characters",
+                })?;
 
         if !STORE_BASE_NAME_REGEX.is_match(s) {
-            return Err(AtticError::InvalidStorePathName {
+            return Err(CellerError::InvalidStorePathName {
                 base_name,
                 reason: "Name is of invalid format",
             });
@@ -227,16 +228,16 @@ impl std::fmt::Display for StorePathHash {
 
 impl StorePathHash {
     /// Creates a store path hash from a string.
-    pub fn new(hash: String) -> AtticResult<Self> {
+    pub fn new(hash: String) -> CellerResult<Self> {
         if hash.len() != STORE_PATH_HASH_LEN {
-            return Err(AtticError::InvalidStorePathHash {
+            return Err(CellerError::InvalidStorePathHash {
                 hash,
                 reason: "Hash is of invalid length",
             });
         }
 
         if !STORE_PATH_HASH_REGEX.is_match(&hash) {
-            return Err(AtticError::InvalidStorePathHash {
+            return Err(CellerError::InvalidStorePathHash {
                 hash,
                 reason: "Hash is of invalid format",
             });
@@ -273,18 +274,18 @@ impl<'de> Deserialize<'de> for StorePathHash {
 }
 
 /// Returns the base store name of a path relative to a store root.
-fn to_base_name(store_dir: &Path, path: &Path) -> AtticResult<PathBuf> {
+fn to_base_name(store_dir: &Path, path: &Path) -> CellerResult<PathBuf> {
     if let Ok(remaining) = path.strip_prefix(store_dir) {
         let first = remaining
             .iter()
             .next()
-            .ok_or_else(|| AtticError::InvalidStorePath {
+            .ok_or_else(|| CellerError::InvalidStorePath {
                 path: path.to_owned(),
                 reason: "Path is store directory itself",
             })?;
 
         if first.len() < STORE_PATH_HASH_LEN {
-            Err(AtticError::InvalidStorePath {
+            Err(CellerError::InvalidStorePath {
                 path: path.to_owned(),
                 reason: "Path is too short",
             })
@@ -292,7 +293,7 @@ fn to_base_name(store_dir: &Path, path: &Path) -> AtticResult<PathBuf> {
             Ok(PathBuf::from(first))
         }
     } else {
-        Err(AtticError::InvalidStorePath {
+        Err(CellerError::InvalidStorePath {
             path: path.to_owned(),
             reason: "Path is not in store directory",
         })

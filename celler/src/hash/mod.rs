@@ -8,7 +8,7 @@ use displaydoc::Display;
 use serde::{de, ser, Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::error::AtticResult;
+use crate::error::CellerResult;
 
 /// A hash.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -57,7 +57,7 @@ impl Hash {
     }
 
     /// Parses a typed representation of a hash.
-    pub fn from_typed(s: &str) -> AtticResult<Self> {
+    pub fn from_typed(s: &str) -> CellerResult<Self> {
         let colon = s.find(':').ok_or(Error::NoColonSeparator)?;
 
         let (typ, rest) = s.split_at(colon);
@@ -73,7 +73,7 @@ impl Hash {
     }
 
     /// Parses a hash from an SRI (Subresource Integrity) string.
-    pub fn from_sri(s: &str) -> AtticResult<Self> {
+    pub fn from_sri(s: &str) -> CellerResult<Self> {
         let dash = s.find('-').ok_or(Error::NoDashSeparator)?;
 
         let (typ, rest) = s.split_at(dash);
@@ -95,7 +95,7 @@ impl Hash {
 
     /// Returns the hash in hexadecimal format, with the hash type prepended.
     ///
-    /// This is the canonical representation of hashes in the Attic database.
+    /// This is the canonical representation of hashes in the Celler database.
     pub fn to_typed_base16(&self) -> String {
         format!("{}:{}", self.hash_type(), hex::encode(self.data()))
     }
@@ -142,7 +142,7 @@ impl Serialize for Hash {
 }
 
 /// Decodes a base16 or base32 or base64 encoded hash containing a specified number of bytes.
-fn decode_hash(s: &str, typ: &'static str, expected_bytes: usize) -> AtticResult<Vec<u8>> {
+fn decode_hash(s: &str, typ: &'static str, expected_bytes: usize) -> CellerResult<Vec<u8>> {
     // For smaller values, the base32 and base64 may be the same and we misidentify how to decode them.
     assert!(expected_bytes > 10);
 

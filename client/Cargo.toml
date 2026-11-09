@@ -1,5 +1,5 @@
 [package]
-name = "attic-client"
+name = "celler-client"
 version.workspace = true
 edition.workspace = true
 publish = false
@@ -9,8 +9,8 @@ name = "celler"
 path = "src/main.rs"
 
 [dependencies]
-attic = { workspace = true, default-features = true }
-attic-token = { workspace = true }
+celler = { workspace = true, default-features = true }
+celler-token = { workspace = true }
 
 anyhow.workspace = true
 bytes.workspace = true

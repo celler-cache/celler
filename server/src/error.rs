@@ -11,7 +11,7 @@ use displaydoc::Display;
 use serde::Serialize;
 use tracing_error::SpanTrace;
 
-use attic::error::AtticError;
+use celler::error::CellerError;
 
 pub type ServerResult<T> = Result<T, ServerError>;
 
@@ -73,7 +73,7 @@ pub enum ErrorKind {
     RequestError(AnyError),
 
     /// Error from the common components.
-    AtticError(AtticError),
+    CellerError(CellerError),
 }
 
 #[derive(Serialize)]
@@ -119,9 +119,9 @@ impl From<ErrorKind> for ServerError {
     }
 }
 
-impl From<AtticError> for ServerError {
-    fn from(error: AtticError) -> Self {
-        ErrorKind::AtticError(error).into()
+impl From<CellerError> for ServerError {
+    fn from(error: CellerError) -> Self {
+        ErrorKind::CellerError(error).into()
     }
 }
 
@@ -153,7 +153,7 @@ impl StdError for ServerError {
             ErrorKind::ManifestSerializationError(error) => Some(error),
             ErrorKind::AccessError(error) => Some(error),
             ErrorKind::RequestError(error) => Some(error.as_ref()),
-            ErrorKind::AtticError(error) => Some(error),
+            ErrorKind::CellerError(error) => Some(error),
         }
     }
 }
@@ -166,7 +166,7 @@ impl IntoResponse for ServerError {
             ErrorKind::DatabaseError(_)
                 | ErrorKind::StorageError(_)
                 | ErrorKind::ManifestSerializationError(_)
-                | ErrorKind::AtticError(_)
+                | ErrorKind::CellerError(_)
         ) {
             tracing::error!("{}", self);
         }
@@ -203,7 +203,7 @@ impl ErrorKind {
             Self::CacheAlreadyExists => "CacheAlreadyExists",
             Self::InvalidCompressionType { .. } => "InvalidCompressionType",
             Self::IncompleteNar => "IncompleteNar",
-            Self::AtticError(e) => e.name(),
+            Self::CellerError(e) => e.name(),
             Self::DatabaseError(_) => "DatabaseError",
             Self::StorageError(_) => "StorageError",
             Self::ManifestSerializationError(_) => "ManifestSerializationError",

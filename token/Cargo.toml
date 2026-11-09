@@ -1,10 +1,10 @@
 [package]
-name = "attic-token"
+name = "celler-token"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-attic = { workspace = true, default-features = false }
+celler = { workspace = true, default-features = false }
 
 base64.workspace = true
 chrono.workspace = true

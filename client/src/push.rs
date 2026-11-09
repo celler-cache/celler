@@ -33,11 +33,11 @@ use tokio::task::{spawn, JoinHandle};
 use tokio::time;
 
 use crate::api::ApiClient;
-use attic::api::v1::cache_config::CacheConfig;
-use attic::api::v1::upload_path::{UploadPathNarInfo, UploadPathResult, UploadPathResultKind};
-use attic::cache::CacheName;
-use attic::error::AtticResult;
-use attic::nix_store::{NixStore, StorePath, StorePathHash, ValidPathInfo};
+use celler::api::v1::cache_config::CacheConfig;
+use celler::api::v1::upload_path::{UploadPathNarInfo, UploadPathResult, UploadPathResultKind};
+use celler::cache::CacheName;
+use celler::error::CellerResult;
+use celler::nix_store::{NixStore, StorePath, StorePathHash, ValidPathInfo};
 use tracing::error;
 
 type JobSender = channel::Sender<ValidPathInfo>;
@@ -92,7 +92,7 @@ pub struct Pusher {
 /// Many store paths can be built in a short period of time, with each
 /// having a big closure. It can be very inefficient if we were to compute
 /// closure and query for missing paths for each individual path. This is
-/// especially true if we have a lot of remote builders (e.g., `attic watch-store`
+/// especially true if we have a lot of remote builders (e.g., `celler watch-store`
 /// running alongside a beefy Hydra instance).
 ///
 /// `PushSession` batches operations in order to minimize the number of
@@ -640,14 +640,14 @@ pub async fn upload_path(
     }
 }
 
-impl<S: Stream<Item = AtticResult<Bytes>>> NarStreamProgress<S> {
+impl<S: Stream<Item = CellerResult<Bytes>>> NarStreamProgress<S> {
     fn new(stream: S, bar: ProgressBar) -> Self {
         Self { stream, bar }
     }
 }
 
-impl<S: Stream<Item = AtticResult<Bytes>> + Unpin> Stream for NarStreamProgress<S> {
-    type Item = AtticResult<Bytes>;
+impl<S: Stream<Item = CellerResult<Bytes>> + Unpin> Stream for NarStreamProgress<S> {
+    type Item = CellerResult<Bytes>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match Pin::new(&mut self.stream).as_mut().poll_next(cx) {
