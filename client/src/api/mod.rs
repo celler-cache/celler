@@ -26,8 +26,11 @@ use celler::cache::CacheName;
 use celler::nix_store::StorePathHash;
 
 /// The User-Agent string of Celler.
-const CELLER_USER_AGENT: &str =
-    formatcp!("Celler/{} ({})", env!("CARGO_PKG_NAME"), CELLER_DISTRIBUTOR);
+const CELLER_USER_AGENT: &str = formatcp!(
+    "Celler/{} ({})",
+    env!("CARGO_PKG_VERSION"),
+    CELLER_DISTRIBUTOR
+);
 
 /// The size threshold to send the upload info as part of the PUT body.
 const NAR_INFO_PREAMBLE_THRESHOLD: usize = 4 * 1024; // 4 KiB

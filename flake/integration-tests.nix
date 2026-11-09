@@ -29,7 +29,7 @@ in
   };
 
   config = {
-    perSystem = { self', pkgs, config, system, ... }:
+    perSystem = { pkgs, config, system, ... }:
       let
         cfg = config.celler.integration-tests;
 

@@ -14,7 +14,7 @@ use celler_server::config;
 
 /// Nix binary cache server.
 #[derive(Debug, Parser)]
-#[clap(version, author = "Zhaofeng Li <hello@zhaofeng.li>")]
+#[clap(version)]
 #[clap(propagate_version = true)]
 struct Opts {
     /// Path to the config file.

@@ -21,7 +21,7 @@ let
 
   commonArgs = {
     pname = "celler";
-    version = "0.1.0";
+    inherit (craneLib.crateNameFromCargoToml { cargoToml = ./Cargo.toml; }) version;
 
     src = lib.cleanSourceWith {
       filter = name: type: !(type == "directory" && builtins.elem (baseNameOf name) ignoredPaths);
@@ -58,8 +58,8 @@ let
     '';
 
     meta = with lib; {
-      description = "Multi-tenant Nix binary cache system";
-      homepage = "https://github.com/blitz/celler";
+      description = "Multi-tenant Nix binary cache";
+      homepage = "https://celler.x86.lol";
       license = licenses.eupl12;
       maintainers = with maintainers; [ blitz ];
       platforms = platforms.linux ++ platforms.darwin;
