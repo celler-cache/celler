@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.1] - 2026-11-09
+
+First release candidate for Celler 1.0.0. Changes are relative to
+[Attic](https://github.com/zhaofengli/attic) at commit
+`12cbeca141f46e1ade76728bce8adc447f2166c6`. See the [migration
+guide](https://celler.x86.lol/admin-guide/attic-migration.html) for upgrading
+from Attic.
+
 ### Added
 
 - `CELLER_TOKEN` environment variable as an alternative to `celler login`, useful for CI and scripted use.
@@ -16,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking**: Binaries renamed: `attic` → `celler`, `atticd` → `cellerd`.
 - **Breaking**: NixOS module renamed: `services.atticd` → `services.cellerd`.
+- **Breaking**: The client configuration moved from `~/.config/attic/config.toml` to `~/.config/celler/config.toml`. Move the file or run `celler login` again.
+- **Breaking**: HTTP headers renamed from `X-Attic-*` to `X-Celler-*`. Attic clients cannot push to a Celler server, and the Celler client cannot push to an Attic server.
 - Replaced C++ FFI to `libnixstore` with the pure-Rust `nix-daemon` crate.
 - Updated [sea-orm](https://www.sea-ql.org/SeaORM/) to v2.x.
 - `celleradm` was integrated into `celler` as `celler admin` subcommand.
@@ -40,5 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - S3 storage: improved tolerance for transient errors.
 - Improved error logging for `push` and `watch-store`.
 - `celler login` now fails if the configuration file cannot be written instead of succeeding and confusing the user.
+- The client now sends its version in the User-Agent (`Celler/<version> (<distributor>)`) on all API calls. Previously it sent the package name instead of the version, and only on some calls.
 
-[Unreleased]: https://github.com/celler-cache/celler/compare/12cbeca141f46e1ade76728bce8adc447f2166c6...HEAD
+[Unreleased]: https://github.com/celler-cache/celler/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/celler-cache/celler/compare/12cbeca141f46e1ade76728bce8adc447f2166c6...v1.0.0-rc.1
