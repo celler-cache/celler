@@ -41,4 +41,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error logging for `push` and `watch-store`.
 - `celler login` now fails if the configuration file cannot be written instead of succeeding and confusing the user.
 
-[Unreleased]: https://github.com/blitz/celler/compare/12cbeca141f46e1ade76728bce8adc447f2166c6...HEAD
+[Unreleased]: https://github.com/celler-cache/celler/compare/12cbeca141f46e1ade76728bce8adc447f2166c6...HEAD
